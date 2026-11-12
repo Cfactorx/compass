@@ -1,0 +1,4 @@
+/* 设置页样式 */
+.arrow { color: #B0A494; font-size: 34rpx; line-height: 1; }
+.set-row .lab .sub { display: block; }
+.set-row .seg.wide { margin-top: 16rpx; }

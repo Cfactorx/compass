@@ -1,0 +1,103 @@
+<!-- 实地罗盘页：盘面 + 传感器状态 + 判读卡 -->
+<view class="wrap">
+
+  <!-- 罗盘盘面 -->
+  <view class="compass-wrap">
+    <canvas
+      type="2d"
+      id="dial"
+      class="dial-canvas"
+      style="width:{{cw}}px;height:{{cw}}px"
+      bindtap="onDialTap"
+    ></canvas>
+  </view>
+  <view class="dial-badge-wrap">
+    <view class="dial-badge">{{badgeText}}</view>
+  </view>
+
+  <!-- 传感器状态 -->
+  <view class="sensor-strip">
+    <view class="dot {{sensorCls}}"></view>
+    <text>{{sensorText}}</text>
+  </view>
+
+  <!-- 测量位置状态（本工具不使用手机定位，位置由用户显式指定） -->
+  <view class="pos-strip" bindtap="goSetPos">
+    <text class="pos-ico">📍</text>
+    <text class="pos-txt">{{posText}}</text>
+    <text class="pos-act">{{posSet ? '修改' : '去设定'}}</text>
+  </view>
+
+  <!-- 手动转盘（无传感器或用户主动开启时显示） -->
+  <view class="manual-box" wx:if="{{manualVisible}}">
+    <view class="manual-head">
+      <text>手动转盘（无磁力计时可用）</text>
+      <text class="mono">{{manualVal}}°</text>
+    </view>
+    <slider
+      min="0"
+      max="359"
+      step="0.5"
+      value="{{manualVal}}"
+      block-size="22"
+      activeColor="#EF7D2D"
+      bindchanging="onManualChange"
+      bindchange="onManualChange"
+    />
+  </view>
+
+  <!-- 未取得方向数据时的空态 -->
+  <view class="card" wx:if="{{!hasHeading}}">
+    <view class="empty">
+      尚未获取方向数据
+      <view class="sub-hint">请将手机平放并缓慢画 8 字校准；若设备无磁力计，可开启手动转盘或改用地图量测</view>
+    </view>
+    <view class="btn-row">
+      <view class="btn ghost" bindtap="toggleManual">{{manualVisible ? '关闭手动转盘' : '开启手动转盘'}}</view>
+    </view>
+  </view>
+
+  <!-- 判读卡 -->
+  <view class="card" wx:else>
+    <view class="conc">
+      {{card.conc}}<text class="tag tag-{{card.tagLevel}}">{{card.tagText}}</text>
+    </view>
+    <view class="chips">
+      <text
+        wx:for="{{card.chips}}"
+        wx:key="index"
+        class="chip {{item.cls}}"
+      >{{item.text}}</text>
+    </view>
+    <view class="kv">
+      <view class="row" wx:for="{{card.kv}}" wx:key="index">
+        <text class="k">{{item.k}}</text>
+        <text class="v">{{item.v}}</text>
+      </view>
+    </view>
+    <view class="btn-row">
+      <view class="btn ghost" bindtap="onCalibrate">校准指南针</view>
+      <view class="btn" bindtap="onSave">保存记录</view>
+    </view>
+  </view>
+
+  <!-- 测量位置设定（磁偏角据此计算） -->
+  <view class="card">
+    <view class="pos-title">测量位置</view>
+    <view class="pos-desc">
+      磁偏角按你指定的测量地点计算，不使用手机定位。可在此输入经纬度，或到地图页把准星对准目标后点 ◎。
+    </view>
+    <view class="coord-row">
+      <input class="coord-input" type="digit" placeholder="纬度 如 23.12908"
+             value="{{inpLat}}" bindinput="onInpLat" />
+      <input class="coord-input" type="digit" placeholder="经度 如 113.26436"
+             value="{{inpLng}}" bindinput="onInpLng" />
+      <view class="coord-btn" bindtap="onSetPosByInput">设定</view>
+    </view>
+    <view class="btn-row">
+      <view class="btn ghost" bindtap="goSetPos">去地图页对准准星设定</view>
+    </view>
+  </view>
+
+  <disclaimer variant="short"></disclaimer>
+</view>

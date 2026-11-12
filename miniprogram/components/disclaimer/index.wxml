@@ -1,0 +1,5 @@
+<view wx:if="{{variant === 'full'}}" class="disclaim-full">
+  <view class="df-title">免责声明</view>
+  <view class="df-body">{{text}}</view>
+</view>
+<view wx:else class="disclaim">⚠️ {{text}}</view>

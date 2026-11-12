@@ -1,0 +1,92 @@
+<!-- 设置页 -->
+<view class="wrap">
+
+  <view class="notice">
+    本工具为传统方位测量与数据记录工具，所有设置项仅影响计算口径与显示方式，不改变几何事实。
+  </view>
+
+  <view class="set-group">
+    <view class="set-row col">
+      <view class="lab">分金体系<text class="sub">120 分金（每格 3°，三合盘主流）／240 分金（每格 1.5°）</text></view>
+      <view class="seg wide mt8">
+        <view class="sg-btn {{s.fenjinMode === '120' ? 'on' : ''}}" bindtap="onSeg" data-k="fenjinMode" data-v="120">120 分金</view>
+        <view class="sg-btn {{s.fenjinMode === '240' ? 'on' : ''}}" bindtap="onSeg" data-k="fenjinMode" data-v="240">240 分金</view>
+      </view>
+    </view>
+    <view class="set-row col">
+      <view class="lab">界线判定宽度<text class="sub">坐线距山界多少度以内提示为骑线</text></view>
+      <view class="seg wide mt8">
+        <view class="sg-btn {{s.kongwangWidth === 0.5 ? 'on' : ''}}" bindtap="onSeg" data-k="kongwangWidth" data-v="0.5">±0.5°</view>
+        <view class="sg-btn {{s.kongwangWidth === 1 ? 'on' : ''}}" bindtap="onSeg" data-k="kongwangWidth" data-v="1">±1°</view>
+        <view class="sg-btn {{s.kongwangWidth === 1.5 ? 'on' : ''}}" bindtap="onSeg" data-k="kongwangWidth" data-v="1.5">±1.5°</view>
+      </view>
+    </view>
+    <view class="set-row col">
+      <view class="lab">坐标格式</view>
+      <view class="seg wide mt8">
+        <view class="sg-btn {{s.coordFormat === 'deg' ? 'on' : ''}}" bindtap="onSeg" data-k="coordFormat" data-v="deg">度</view>
+        <view class="sg-btn {{s.coordFormat === 'dms' ? 'on' : ''}}" bindtap="onSeg" data-k="coordFormat" data-v="dms">度分秒</view>
+      </view>
+    </view>
+    <view class="set-row col">
+      <view class="lab">盘面风格</view>
+      <view class="seg wide mt8">
+        <view class="sg-btn {{s.dialStyle === 'modern' ? 'on' : ''}}" bindtap="onSeg" data-k="dialStyle" data-v="modern">现代</view>
+        <view class="sg-btn {{s.dialStyle === 'classic' ? 'on' : ''}}" bindtap="onSeg" data-k="dialStyle" data-v="classic">仿古</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="set-group">
+    <view class="set-row">
+      <view class="lab">真北修正<text class="sub">开启后按真北口径判读；关闭则按磁北（与实体罗盘读数一致）</text></view>
+      <view class="switch {{s.trueNorthMode ? 'on' : ''}}" bindtap="onToggle" data-k="trueNorthMode">
+        <view class="knob"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="set-group">
+    <view class="set-row">
+      <view class="lab">穿山七十二龙<text class="sub">格龙层 · 72 格 · 甲子起壬山 · 每山正中一格无干支</text></view>
+      <view class="switch {{s.showLong72 ? 'on' : ''}}" bindtap="onToggle" data-k="showLong72">
+        <view class="knob"></view>
+      </view>
+    </view>
+    <view class="set-row">
+      <view class="lab">透地六十龙<text class="sub">透地层 · 六十甲子 · 天干戊己的 12 组居中央不入方位</text></view>
+      <view class="switch {{s.showLong60 ? 'on' : ''}}" bindtap="onToggle" data-k="showLong60">
+        <view class="knob"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="set-group">
+    <view class="set-row" bindtap="onAbout">
+      <view class="lab">术语对照与算法说明</view>
+      <text class="arrow">›</text>
+    </view>
+    <view class="set-row" bindtap="onFeedback">
+      <view class="lab">问题反馈</view>
+      <text class="arrow">›</text>
+    </view>
+    <view class="set-row" bindtap="onReset">
+      <view class="lab">恢复默认设置</view>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <view class="set-group">
+    <view class="set-row col">
+      <view class="lab">罗盘体系<text class="sub">地盘正针 · 三合盘 · 一百二十分金</text></view>
+    </view>
+    <view class="set-row col">
+      <view class="lab">磁偏角模型<text class="sub">{{modelText}}</text></view>
+    </view>
+    <view class="set-row col">
+      <view class="lab">版本<text class="sub">{{versionFull}}</text></view>
+    </view>
+  </view>
+
+  <disclaimer variant="short"></disclaimer>
+</view>

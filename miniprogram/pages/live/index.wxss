@@ -1,0 +1,50 @@
+/* 实地罗盘页样式 */
+.compass-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0 4px;
+}
+.dial-canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.dial-badge-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: -18rpx;
+  position: relative;
+  z-index: 2;
+}
+
+.manual-box {
+  margin-top: 22rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 20rpx 20rpx 8rpx;
+  box-shadow: 0 8rpx 32rpx rgba(217, 106, 31, .10);
+}
+.manual-box .manual-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 23rpx;
+  color: #8A7A6D;
+  margin-bottom: 6rpx;
+}
+.manual-box .manual-head .mono {
+  color: #D96A1F;
+  font-weight: 700;
+  font-size: 26rpx;
+}
+
+.sub-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #B0A494;
+  margin-top: 12rpx;
+  line-height: 1.7;
+}
+
+/* 卡片内 KV 行距压缩，保证判读在一屏内可见 */
+.card .kv .row { padding: 7rpx 0; }

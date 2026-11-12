@@ -1,0 +1,16 @@
+# 统一换行符为 LF，避免 Windows/macOS 协作时产生无意义的 diff
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.whl binary
+*.tgz binary
+*.gz binary
+
+# Git 内部文件
+.gitattributes text eol=lf
+.gitignore text eol=lf

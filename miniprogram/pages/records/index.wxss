@@ -1,0 +1,19 @@
+/* 记录页样式 */
+.rec-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rpx 8rpx 16rpx;
+}
+.rec-bar .rec-count { font-size: 22rpx; color: #8A7A6D; }
+.rec-bar-btns { display: flex; }
+.link {
+  font-size: 23rpx;
+  color: #D96A1F;
+  padding: 4rpx 12rpx;
+}
+.link.danger { color: #C2402A; }
+
+.rec-item .ract .btn { margin-right: 12rpx; }
+.rec-item .ract .btn:last-child { margin-right: 0; flex: 0 0 auto; padding-left: 28rpx; padding-right: 28rpx; }
+.rec-item .ract .btn.plain { flex: 1; }

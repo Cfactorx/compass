@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "测量记录",
+  "usingComponents": {
+    "disclaimer": "/components/disclaimer/index"
+  },
+  "enablePullDownRefresh": false
+}

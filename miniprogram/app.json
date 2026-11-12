@@ -1,0 +1,43 @@
+{
+  "pages": [
+    "pages/live/index",
+    "pages/map/index",
+    "pages/records/index",
+    "pages/settings/index",
+    "pages/about/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#EF7D2D",
+    "navigationBarTitleText": "方位分金罗盘",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FFF6EE"
+  },
+  "tabBar": {
+    "color": "#8A7A6D",
+    "selectedColor": "#EF7D2D",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/live/index",
+        "text": "罗盘"
+      },
+      {
+        "pagePath": "pages/map/index",
+        "text": "地图"
+      },
+      {
+        "pagePath": "pages/records/index",
+        "text": "记录"
+      },
+      {
+        "pagePath": "pages/settings/index",
+        "text": "设置"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

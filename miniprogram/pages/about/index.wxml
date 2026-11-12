@@ -1,0 +1,78 @@
+<!-- 术语对照与算法说明 -->
+<view class="wrap">
+
+  <view class="card">
+    <view class="ab-title">工具定位</view>
+    <view class="ab-text">
+      本工具是一套<text class="em">传统方位测量与数据记录</text>工具，用于：把现场方位角换算成
+      二十四山、分金格与兼向档位，并把读数留存为可复核的记录。所有输出均由
+      确定的几何算法与查表得出，可逐项复算。
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="ab-title">一、分金格位对照</view>
+    <view class="ab-sub">古籍对分金格位的命名带有褒贬色彩，本工具统一改为<text class="em">中性格位描述</text>，仅表示「该格位在本山内的位置」，不作价值判断。</view>
+    <view class="tbl">
+      <view class="th">
+        <text class="c1">古籍名</text><text class="c2">本工具表述</text><text class="c3">含义</text>
+      </view>
+      <view class="tr" wx:for="{{attrTable}}" wx:key="old">
+        <text class="c1">{{item.old}}</text><text class="c2">{{item.now}}</text><text class="c3">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="ab-title">二、纳音与山家五行关系</view>
+    <view class="ab-sub">穿山/透地龙层显示的五行关系，同样去掉褒贬用语，只描述生克事实。</view>
+    <view class="tbl">
+      <view class="th">
+        <text class="c1">古籍名</text><text class="c2">本工具表述</text>
+      </view>
+      <view class="tr" wx:for="{{fortuneTable}}" wx:key="old">
+        <text class="c1">{{item.old}}</text><text class="c2">{{item.now}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="ab-title">三、算法说明</view>
+    <view class="ab-kv">
+      <view class="abr"><text class="k">二十四山</text><text class="v">自子山 0° 起顺时针，每山 15°。12 地支 + 8 天干（戊己居中央不入山）+ 4 卦维（艮巽坤乾）。</text></view>
+      <view class="abr"><text class="k">120 分金</text><text class="v">每山 5 格、每格 3°。地支山用本支；干维山借顺时针前一支。阳支山配甲丙戊庚壬，阴支山配乙丁己辛癸。</text></view>
+      <view class="abr"><text class="k">240 分金</text><text class="v">同一父格上下各半格（1.5°），相邻干支交替。</text></view>
+      <view class="abr"><text class="k">界线提示</text><text class="v">山界位于 7.5°+15k，卦界位于 22.5°+45k。坐线距界线的宽度可由设置页调整（±0.5°/±1°/±1.5°）。</text></view>
+      <view class="abr"><text class="k">兼向档位</text><text class="v">偏出本山中线 ≤1.5° 记为居中；1.5°~4.5° 记为兼向并按 1.5° 一档计分；&gt;4.5° 提示偏角过大。</text></view>
+      <view class="abr"><text class="k">穿山七十二龙</text><text class="v">72 格、每格 5°，甲子起于壬山左格。每山正中一格无干支可取（天干戊己居中央不入方位）。</text></view>
+      <view class="abr"><text class="k">透地六十龙</text><text class="v">六十甲子完整布列，每格 6°，甲子起于 337.5°。天干为戊、己的 12 组居中央，不落方位。</text></view>
+      <view class="abr"><text class="k">磁偏角</text><text class="v">采用 WMM2025 世界地磁模型（NOAA/NCEI 系数，12 阶球谐展开），东偏为正。真北 = 磁北 + 磁偏角。</text></view>
+      <view class="abr"><text class="k">坐标系统</text><text class="v">地图取点使用 GCJ-02；磁偏角与方位角计算前统一转换为 WGS-84。</text></view>
+      <view class="abr"><text class="k">方位角</text><text class="v">两点间采用大圆方位角（球面几何），非平面近似。</text></view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="ab-title">四、使用提示</view>
+    <view class="ab-list">
+      <view class="li">1. 磁场干扰（金属、电器、磁吸支架）会显著影响磁力计读数，测量前请完成 8 字校准。</view>
+      <view class="li">2. 手机平放测量与竖持测量的读数口径不同，请在同一姿态下比较。</view>
+      <view class="li">3. 地图量测建议放大到 16 级以上再取点，两点间距过近时方位角误差会被放大。</view>
+      <view class="li">4. 默认按磁北口径判读（与实体罗盘读数一致）；如需真北口径，请在设置页开启「真北修正」。</view>
+      <view class="li">5. 所有数据仅保存在本机，不上传、不共享；卸载小程序即清除。</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="ab-title">五、隐私说明</view>
+    <view class="ab-text">
+      位置信息仅用于：① 计算当前地点的磁偏角；② 在你主动使用「地图量测」时把地图中心移动到当前位置。
+      位置与测量记录均只写入本机存储（wx.Storage），本小程序<text class="em">不进行任何网络上传</text>，
+      也不含统计、广告等第三方 SDK。
+    </view>
+  </view>
+
+  <disclaimer variant="full"></disclaimer>
+
+  <view class="ab-foot">方位分金罗盘 · 小程序版 1.0.0 · V1.6 引擎同源</view>
+</view>

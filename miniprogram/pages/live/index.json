@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "方位分金罗盘",
+  "usingComponents": {
+    "disclaimer": "/components/disclaimer/index"
+  },
+  "enablePullDownRefresh": false
+}

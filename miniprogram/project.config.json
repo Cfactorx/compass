@@ -1,0 +1,35 @@
+{
+  "description": "方位分金罗盘 · 小程序工程配置（AppID 由发布平台注入，不在本文件硬编码）",
+  "compileType": "miniprogram",
+  "projectname": "luopan-fenjin",
+  "packOptions": {
+    "ignore": [
+      { "type": "file", "value": "README.md" }
+    ],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "minifyWXSS": true,
+    "coverView": true,
+    "autoAudits": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "ignoreUploadUnusedFiles": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "condition": {
+    "miniprogram": {
+      "list": []
+    }
+  }
+}

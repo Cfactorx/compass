@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "术语与算法说明",
+  "usingComponents": {
+    "disclaimer": "/components/disclaimer/index"
+  }
+}

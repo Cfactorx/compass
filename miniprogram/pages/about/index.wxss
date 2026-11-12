@@ -1,0 +1,73 @@
+/* 术语与算法说明页样式 */
+.ab-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #3D3229;
+  margin-bottom: 14rpx;
+}
+.ab-sub {
+  font-size: 23rpx;
+  color: #8A7A6D;
+  line-height: 1.75;
+  margin-bottom: 16rpx;
+}
+.ab-text {
+  font-size: 25rpx;
+  color: #5A4B3E;
+  line-height: 1.9;
+}
+.ab-text .em { color: #D96A1F; font-weight: 700; }
+
+/* ---- 对照表 ---- */
+.tbl { border-radius: 16rpx; overflow: hidden; }
+.tbl .th,
+.tbl .tr {
+  display: flex;
+  align-items: flex-start;
+  padding: 14rpx 12rpx;
+  font-size: 23rpx;
+  line-height: 1.6;
+}
+.tbl .th {
+  background: #FBE9D8;
+  color: #D96A1F;
+  font-weight: 700;
+}
+.tbl .tr:nth-child(even) { background: #FBF7F2; }
+.tbl .tr { border-bottom: 1px solid #F5EADF; }
+.tbl .tr:last-child { border-bottom: none; }
+.tbl .c1 { width: 90rpx; flex-shrink: 0; color: #8A7A6D; }
+.tbl .c2 { width: 130rpx; flex-shrink: 0; color: #D96A1F; font-weight: 700; }
+.tbl .c3 { flex: 1; color: #5A4B3E; }
+.tbl .th .c1, .tbl .th .c2, .tbl .th .c3 { color: #D96A1F; }
+
+/* ---- 算法键值 ---- */
+.ab-kv .abr {
+  display: flex;
+  padding: 14rpx 0;
+  border-bottom: 1px dashed #F5EADF;
+  font-size: 23rpx;
+  line-height: 1.75;
+}
+.ab-kv .abr:last-child { border-bottom: none; }
+.ab-kv .abr .k {
+  width: 170rpx;
+  flex-shrink: 0;
+  color: #8A7A6D;
+}
+.ab-kv .abr .v { flex: 1; color: #5A4B3E; }
+
+/* ---- 列表 ---- */
+.ab-list .li {
+  font-size: 25rpx;
+  color: #5A4B3E;
+  line-height: 1.85;
+  padding: 8rpx 0;
+}
+
+.ab-foot {
+  text-align: center;
+  font-size: 21rpx;
+  color: #C4B7A8;
+  margin-top: 28rpx;
+}

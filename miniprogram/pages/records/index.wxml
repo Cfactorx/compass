@@ -1,0 +1,37 @@
+<!-- 测量记录页 -->
+<view class="wrap">
+
+  <view class="rec-bar" wx:if="{{list.length}}">
+    <text class="rec-count">共 {{list.length}} 条（最多保留 50 条）</text>
+    <view class="rec-bar-btns">
+      <text class="link" bindtap="onCopyAll">复制全部</text>
+      <text class="link danger" bindtap="onClearAll">清空</text>
+    </view>
+  </view>
+
+  <view wx:if="{{!list.length}}" class="card">
+    <view class="empty">
+      暂无测量记录
+      <view class="sub-hint">在「罗盘」页或「地图」页完成一次判读后，点「保存记录」即可留存。</view>
+    </view>
+  </view>
+
+  <view class="rec-item" wx:for="{{list}}" wx:key="id">
+    <view class="rt">
+      <text>{{item.ts}}</text>
+      <text>{{item.modeText}}</text>
+    </view>
+    <view class="rc">{{item.conclusion}}</view>
+    <view class="rm">
+      <view>坐方 {{item.sittingDeg}}°{{item.declText}}</view>
+      <view wx:if="{{item.extraText}}">{{item.extraText}}</view>
+      <view wx:if="{{item.source}}">来源：{{item.source}}</view>
+    </view>
+    <view class="ract">
+      <view class="btn sm plain" bindtap="onView" data-id="{{item.id}}">查看详情</view>
+      <view class="btn sm btn-danger" bindtap="onDelete" data-id="{{item.id}}">删除</view>
+    </view>
+  </view>
+
+  <disclaimer variant="short"></disclaimer>
+</view>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方位分金罗盘 · 小程序交付说明</title>
+<style>
+:root{
+  --primary:#EF7D2D; --primary-deep:#D96A1F; --primary-soft:#FBE9D8;
+  --ink:#3D3229; --muted:#8A7A6D; --bg:#FFF6EE; --card:#FFFFFF;
+  --line:#F0E2D2; --red:#C2402A; --good:#2E8B57; --warn:#B4771A;
+  --ok-bg:#E4F3EA; --warn-bg:#FDF0DA; --bad-bg:#FBE7E2;
+  --shadow:0 4px 16px rgba(217,106,31,.10);
+  --code-bg:#FBF7F2;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#EDE4DA; --muted:#A99C8F; --bg:#1E1A17; --card:#282220;
+    --line:#3A322C; --primary-soft:#3A2A1D; --ok-bg:#1E3328; --warn-bg:#3A2F18;
+    --bad-bg:#3A2020; --code-bg:#221D1A; --good:#5FBF87; --warn:#E0AE55; --red:#E8746A;
+    --shadow:0 4px 16px rgba(0,0,0,.35);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:940px;margin:0 auto;padding:0 20px 80px}
+header{
+  background:linear-gradient(135deg,#EF7D2D 0%,#F09A4B 100%);
+  color:#fff;padding:38px 20px 32px;margin-bottom:26px;
+}
+header .inner{max-width:940px;margin:0 auto}
+header h1{font-size:26px;letter-spacing:1px;font-weight:800}
+header .sub{font-size:13px;opacity:.9;margin-top:6px;letter-spacing:.5px}
+header .meta{font-size:12px;opacity:.82;margin-top:14px;display:flex;gap:18px;flex-wrap:wrap}
+h2{
+  font-size:19px;margin:34px 0 14px;padding-left:12px;border-left:4px solid var(--primary);
+  letter-spacing:.5px;
+}
+h3{font-size:15px;margin:20px 0 10px;color:var(--primary-deep)}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px;margin:14px 0}
+p{font-size:14px;margin:8px 0}
+ul,ol{margin:8px 0 8px 22px;font-size:14px}
+li{margin:5px 0}
+code{
+  background:var(--code-bg);border-radius:5px;padding:1px 6px;
+  font-family:Consolas,Monaco,monospace;font-size:12.5px;color:var(--primary-deep);
+}
+pre{
+  background:var(--code-bg);border-radius:12px;padding:14px 16px;overflow-x:auto;
+  font-family:Consolas,Monaco,monospace;font-size:12.5px;line-height:1.7;margin:12px 0;
+  border:1px solid var(--line);
+}
+pre code{background:none;padding:0;color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--primary-soft);color:var(--primary-deep);font-weight:700;font-size:12.5px}
+tr:last-child td{border-bottom:none}
+td.k{color:var(--muted);white-space:nowrap}
+.tag{
+  display:inline-block;font-size:11.5px;font-weight:700;border-radius:7px;padding:2px 9px;
+  margin-left:6px;vertical-align:1px;white-space:nowrap;
+}
+.tag.ok{background:var(--ok-bg);color:var(--good)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.bad{background:var(--bad-bg);color:var(--red)}
+.pill{
+  display:inline-block;font-size:12px;border-radius:20px;padding:4px 13px;margin:3px 6px 3px 0;
+  background:var(--primary-soft);color:var(--primary-deep);font-weight:600;
+}
+.pass{
+  background:var(--ok-bg);color:var(--good);border-radius:12px;padding:12px 16px;
+  font-size:13.5px;font-weight:700;margin:12px 0;border-left:4px solid var(--good);
+}
+.warnbox{
+  background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:12px 16px;
+  font-size:13.5px;margin:12px 0;border-left:4px solid var(--warn);
+}
+.dangerbox{
+  background:var(--bad-bg);color:var(--red);border-radius:12px;padding:12px 16px;
+  font-size:13.5px;margin:12px 0;border-left:4px solid var(--red);
+}
+.dangerbox b, .warnbox b, .pass b{color:inherit}
+.steps{counter-reset:s;margin:10px 0}
+.steps .st{
+  position:relative;padding:12px 0 12px 46px;border-bottom:1px dashed var(--line);font-size:14px;
+}
+.steps .st:last-child{border-bottom:none}
+.steps .st::before{
+  counter-increment:s;content:counter(s);
+  position:absolute;left:0;top:12px;width:30px;height:30px;border-radius:50%;
+  background:var(--primary);color:#fff;font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.steps .st .t{font-weight:700}
+.steps .st .d{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.7}
+.doctor{font-size:12.5px;color:var(--muted);text-align:center;margin-top:44px;padding-top:18px;border-top:1px solid var(--line)}
+.legend{font-size:12px;color:var(--muted);margin:6px 0 0}
+.mono{font-family:Consolas,Monaco,monospace}
+@media (max-width:640px){
+  header h1{font-size:21px}
+  h2{font-size:17px}
+  table{font-size:12px}
+  th,td{padding:7px 8px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>方位分金罗盘 · 小程序交付说明</h1>
+    <div class="sub">传统方位测量与数据记录工具 · 微信小程序端 1.0.0 · V1.6 引擎同源</div>
+    <div class="meta">
+      <span>交付日期 2026-10-14</span>
+      <span>版本 V1.6.2</span>
+      <span>5 页面 / 39 文件 / 零依赖</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2>一、交付概览</h2>
+  <div class="card">
+    <table>
+      <tr><td class="k">小程序代码</td><td>已完成 <span class="tag ok">39 文件</span> 5 个页面、27 个事件绑定、零 npm 依赖 / 零后端 / 零联网</td></tr>
+      <tr><td class="k">判读引擎</td><td>与 H5 版共用同一份（432 行、27 个纯函数、零 DOM 依赖） <span class="tag ok">100% 复用</span></td></tr>
+      <tr><td class="k">合规改造</td><td>术语全部中性化，禁词扫描 40+ 词 <span class="tag ok">已通过</span></td></tr>
+      <tr><td class="k">静态自检</td><td>C1–C14 全通过 <span class="tag ok">0 错误 0 警告</span></td></tr>
+      <tr><td class="k">反向验证</td><td>17 个检查项在缺陷夹具上全部正确报错 <span class="tag ok">非恒通过</span></td></tr>
+      <tr><td class="k">H5 回归</td><td>引擎 181/181 断言通过 <span class="tag ok">100%</span></td></tr>
+      <tr><td class="k">正式 AppID</td><td>待注册 <span class="tag warn">人工</span></td></tr>
+      <tr><td class="k">微信开发者工具</td><td>本机未安装 <span class="tag warn">人工</span></td></tr>
+      <tr><td class="k">服务端口</td><td>待开启（自动化唯一闸门） <span class="tag warn">人工</span></td></tr>
+      <tr><td class="k">提交审核</td><td>微信不提供 API，只能人工操作 <span class="tag warn">人工</span></td></tr>
+    </table>
+  </div>
+
+  <h2>二、验证结果（实跑输出，非文档推断）</h2>
+  <div class="card">
+<pre><code>npm run verify
+
+[build-mp-engine]  ✓ 引擎零 DOM 依赖校验通过（10 项符号扫描）
+[build-mp-engine]  ✓ 关键导出完整性校验通过（24 项）
+[build-mp-engine]  ✓ WMM2025 系数表校验通过
+[build-mp-engine]  ✓ 生成模块可 require，冒烟测试 8/8 通过
+[build-mp-icons]   ✓ PNG 签名 + IEND + IDAT 解压 + 中心像素颜色 四级校验通过
+[merge.js]         ✓ 4 项硬校验，index.html 87859 bytes
+
+TOTAL: 181  PASS: 181  FAIL: 0   覆盖率(按断言): 100.0%
+[ui_static]        ✓ U1–U4 全部通过
+[ui_static --selftest]   ✓ 反向验证 4/4 报错 + 阴性样本零误报
+[check-mp --selftest]    ✓ 反向验证 13/13 报错
+[check-mp]         ✓ C1–C14 全部检查项通过（0 错误 0 警告）</code></pre>
+    <div class="pass">全部通过。<b>反向验证</b>意味着：把修复回退后测试会变红，证明检查器不是「恒通过」。</div>
+  </div>
+
+  <h2>三、小程序工程结构</h2>
+  <div class="card">
+<pre><code>miniprogram/
+├── app.js / app.json / app.wxss / sitemap.json
+├── project.config.json          appid 待替换（当前 touristappid）
+├── assets/                      pin-sit.png · pin-face.png · pin-locate.png
+├── components/disclaimer/       免责声明组件（每页必引）
+├── pages/
+│   ├── live/                    实地罗盘：Canvas 2D + wx.startCompass + 手动转盘降级
+│   ├── map/                     地图量测：原生 map + 十字准星取点 + 点击定向
+│   ├── records/                 测量记录：查看 / 删除 / 清空 / 复制
+│   ├── settings/                分金体系 / 界线宽度 / 坐标格式 / 盘面风格 / 真北 / 龙脉层
+│   └── about/                   术语对照与算法说明
+└── utils/
+    ├── engine.js                【自动生成】来自 assets/part1.html，禁止手改
+    ├── terms.js                 术语中性化映射（合规唯一出口）
+    ├── store.js                 wx.Storage 封装
+    ├── geo.js                   定位 + WMM2025 磁偏角
+    ├── compass.js               wx.startCompass 封装
+    └── dial.js                  罗盘盘面绘制（Canvas 2D + 离屏缓存）</code></pre>
+    <p class="legend">全部 3 个 PNG 图标由 <code>scripts/build-mp-icons.js</code> 用 Node 内置 zlib 现场生成 —— 克隆仓库即可编译，不引入任何二进制素材。</p>
+  </div>
+
+  <h2>四、与 H5 版的差异</h2>
+  <div class="card">
+    <table>
+      <tr><th>维度</th><th>H5 版</th><th>小程序版</th></tr>
+      <tr><td class="k">方向传感器</td><td><code>DeviceOrientationEvent</code> + iOS <code>requestPermission()</code> + 3 秒兜底 + 脉冲提示</td><td><code>wx.startCompass</code> / <code>wx.onCompassChange</code>，<b>无需授权弹窗</b>，整套授权引导逻辑取消</td></tr>
+      <tr><td class="k">地图</td><td>自实现 Slippy 瓦片 + canvas overlay + pointer 手势</td><td>原生 <code>&lt;map&gt;</code> 组件 + 十字准星取点</td></tr>
+      <tr><td class="k">取点方式</td><td>长按选坐点 + 拖手柄定向</td><td>准星取坐点 + 点击地图定向（附准星定向兜底按钮）</td></tr>
+      <tr><td class="k">存储</td><td><code>localStorage</code></td><td><code>wx.setStorageSync</code></td></tr>
+      <tr><td class="k">盘面画布</td><td><code>document.createElement('canvas')</code></td><td><code>wx.createOffscreenCanvas({type:'2d'})</code></td></tr>
+      <tr><td class="k">字体字重</td><td><code>700 30px</code></td><td><code>bold 30px</code>（数字字重在部分机型不稳定）</td></tr>
+      <tr><td class="k">引擎引用</td><td>全局变量 <code>LP</code></td><td>CommonJS <code>module.exports = LP</code></td></tr>
+      <tr><td class="k">判读引擎</td><td colspan="2" style="text-align:center">完全同一份源码，判读结果逐位一致</td></tr>
+    </table>
+  </div>
+
+  <h2>五、顺带修复的 H5 真实缺陷（2 个 P0）</h2>
+  <div class="dangerbox">
+    <b>P0-6：「地图量测 → 保存记录」按钮 100% 崩溃</b> —— 三重错误叠加
+    <ol style="margin-top:8px">
+      <li><code>E.GEO.gcjToWgs</code> 方法不存在（正确名 <code>gcj02ToWgs84</code>）→ <span class="mono">TypeError</span></li>
+      <li><code>getSit()/getFace()</code> 返回 <code>{lat,lng}</code> 对象而非数组，<code>sit[0]</code> 恒为 undefined</li>
+      <li><code>bearing()</code> 是引擎 IIFE 内部函数，UI 作用域不可见 → <span class="mono">ReferenceError</span></li>
+    </ol>
+  </div>
+  <div class="dangerbox">
+    <b>P0-7：应用唤醒后磁偏角永不刷新</b> —— 同一 <code>sit[0]/sit[1]</code> 误用，
+    <code>computeDecl(undefined, undefined)</code> 得到 NaN 后被 <code>isFinite</code> 静默拦掉，<b>无任何报错</b>。
+  </div>
+  <div class="warnbox">
+    <b>根因反思</b>：181 条引擎断言对 <code>part2.html</code> 的 UI 代码<b>零覆盖</b>，这类「跨文件符号不一致」缺陷没有任何测试能发现。
+    已新建 <code>tests/ui_static.js</code>（U1–U4）补齐，并把这两个缺陷做成 <code>--selftest</code> 永久夹具。
+  </div>
+
+  <h2>六、上线 5 步（需你本人操作）</h2>
+  <div class="card">
+    <div class="steps">
+      <div class="st">
+        <div class="t">注册小程序账号，拿到 AppID</div>
+        <div class="d">访问 mp.weixin.qq.com → 立即注册 → 小程序。主体选<b>个人</b>即可满足本工具需求。注册后在「开发 → 开发管理 → 开发设置」复制 <code>wx</code> 开头的 AppID。<br>名称建议「方位分金罗盘」，简介不要出现「风水」「算命」字样。</div>
+      </div>
+      <div class="st">
+        <div class="t">安装微信开发者工具</div>
+        <div class="d">从官方稳定版页下载。<b>安装路径必须纯英文</b>（如 <code>D:\WeChatDevTools</code>）—— 中文路径会导致 CLI 调用、编译缓存、上传出现各种诡异报错。</div>
+      </div>
+      <div class="st">
+        <div class="t">开启「服务端口」</div>
+        <div class="d">开发者工具 → 设置 → 安全设置 → 服务端口「开启」。这是自动化的<b>唯一闸门</b>，不开则所有 CLI 命令报 <code>IDE service port disabled</code>。</div>
+      </div>
+      <div class="st">
+        <div class="t">导入工程并替换 AppID</div>
+        <div class="d">导入目录 <code>…\2026-08-25-13-38-12\miniprogram</code>，或直接编辑 <code>project.config.json</code> 的 <code>appid</code> 字段（当前为 <code>touristappid</code>）。<br>导入后先在模拟器核对：盘面能画出来、地图能加载、4 个 Tab 能切换。</div>
+      </div>
+      <div class="st">
+        <div class="t">真机预览 → 上传 → 提交审核</div>
+        <div class="d"><b>真机预览必须做</b>：模拟器没有磁力计，方向传感器只能在真机验证。<br>上传后在「版本管理」提交审核。类目选 <b>工具 → 娱乐</b>；隐私指引必须声明收集<b>位置信息</b>（用途：计算地磁偏角、定位地图中心，仅本机、不上传）。</div>
+      </div>
+    </div>
+    <p class="legend">完整版（含功能说明文案模板、6 类常见驳回原因与应对）见项目根目录 <code>小程序上线操作手册.md</code>。</p>
+  </div>
+
+  <h2>七、小程序平台踩坑速查</h2>
+  <div class="card">
+    <table>
+      <tr><th>#</th><th>坑</th><th>应对</th></tr>
+      <tr><td>1</td><td><code>cover-view</code> 写在 <code>&lt;map&gt;</code> 外面无法覆盖</td><td>必须是 <code>&lt;map&gt;</code> 的子节点</td></tr>
+      <tr><td>2</td><td><code>cover-view</code> 会吞掉其矩形内的触摸</td><td>十字准星拆成 3 个细条而非整块容器，否则地图正中央拖不动</td></tr>
+      <tr><td>3</td><td><code>cover-view</code> 对 flex 支持不完整</td><td>工具列改用逐项绝对定位</td></tr>
+      <tr><td>4</td><td>WXSS 不能用本地图片 <code>url()</code></td><td>改用 <code>&lt;image&gt;</code>；<code>map marker.iconPath</code> 支持本地文件</td></tr>
+      <tr><td>5</td><td>WXML 不支持 HTML 标签</td><td><code>&lt;div&gt;/&lt;b&gt;/&lt;span&gt;</code> 全部非法；但 <code>&lt;input&gt;/&lt;button&gt;/&lt;label&gt;/&lt;image&gt;</code> 是真实组件</td></tr>
+      <tr><td>6</td><td>文本节点里 <code>\n</code> 不换行</td><td>拆成多个 <code>&lt;view&gt;</code> 行</td></tr>
+      <tr><td>7</td><td><code>canvas.requestAnimationFrame()</code> 是合法 API</td><td>写浏览器全局检查时需排除点号前缀，避免误报</td></tr>
+      <tr><td>8</td><td><code>map</code> 的 markers 不支持拖拽事件</td><td>定向改为「点击地图」+「准星取点」双通道</td></tr>
+    </table>
+  </div>
+
+  <h2>八、合规要点</h2>
+  <div class="card">
+    <p>微信小程序运营规范禁止「占卜、算命、看风水」类内容。本项目按<b>工具化改造</b>策略处理：</p>
+    <h3>术语中性化（<code>utils/terms.js</code> 唯一出口）</h3>
+    <table>
+      <tr><th>古籍术语</th><th>对外表述</th></tr>
+      <tr><td class="k">旺 / 相 / 孤 / 虚 / 空亡</td><td>主格 / 次格 / 偏格 / 空格 / 骑线</td></tr>
+      <tr><td class="k">旺相泄囚死（龙脉五行）</td><td>比和 / 纳音生山 / 山生纳音 / 纳音克山 / 山克纳音</td></tr>
+      <tr><td class="k">吉 / 凶</td><td>格位可用 / 格位不宜</td></tr>
+      <tr><td class="k">大凶方位，避用</td><td>该方位落在山界线上，建议调整角度</td></tr>
+    </table>
+    <h3>三道硬约束（自检强制执行）</h3>
+    <ul>
+      <li><b>C5</b>：40+ 个高风险词（风水、算命、占卜、开光、转运、大师、吉凶…）全工程扫描</li>
+      <li><b>C5b</b>：业务代码禁止直接读引擎的 <code>r.advice</code> / <code>r.conclusion</code>，必须走 <code>terms.conclusionOf()</code></li>
+      <li><b>C10</b>：禁止 <code>wx.request</code> 等联网 API —— 兑现「位置与记录只存本机、零上传」的隐私承诺</li>
+    </ul>
+    <h3>类目与隐私</h3>
+    <ul>
+      <li>类目：<b>工具 → 娱乐</b>（通用类目最稳）。切勿选任何与命理相关的类目。</li>
+      <li>隐私指引：必须声明收集「位置信息」，用途写明仅本机计算与存储。</li>
+      <li>免责声明：每页底部必现（<code>components/disclaimer</code>），关于页有完整版。</li>
+    </ul>
+  </div>
+
+  <h2>九、后续迭代铁律</h2>
+  <div class="card">
+    <div class="warnbox">
+      <b>①</b> <code>utils/engine.js</code> 是<b>生成产物，禁止手改</b>。改引擎请改 <code>assets/part1.html</code>，然后跑 <code>npm run build:mp</code>。<br>
+      <b>②</b> 新增任何用户可见文案后，必须跑 <code>npm run test:mp</code>（禁词扫描会拦住合规风险）。<br>
+      <b>③</b> 新页面必须在 <code>usingComponents</code> 注册 <code>disclaimer</code> 并在 WXML 引用（C6 会拦）。<br>
+      <b>④</b> 绝不在 <code>index.html</code> 上直接改代码（H5 的合并产物），只改 <code>assets/part1.html</code> / <code>part2.html</code> 后重新合并。
+    </div>
+    <h3>常用命令</h3>
+<pre><code>npm run build          # 同步小程序引擎 + 生成图标 + 重合并 H5
+npm run test:mp        # 小程序静态自检 C1–C14
+npm test               # H5 引擎 181 断言 + UI 跨文件一致性校验
+npm run verify         # 全量：构建 + 所有测试 + 双向反向验证</code></pre>
+  </div>
+
+  <div class="doctor">
+    方位分金罗盘 · 小程序端 1.0.0 · V1.6 引擎同源 · 交付于 2026-10-14<br>
+    <span style="font-size:11.5px">本工具为传统方位测量与数据记录工具，输出内容仅为民俗古籍术语对照与几何计算，不构成任何预测、建议或决策依据。</span>
+  </div>
+</div>
+
+</body>
+</html>

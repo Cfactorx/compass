@@ -1,0 +1,22 @@
+{
+  "name": "luopan-fenjin",
+  "version": "1.6.2",
+  "private": true,
+  "description": "罗盘分金 — H5 罗盘应用 + 微信小程序（共用同一份判读引擎）",
+  "scripts": {
+    "build:merge": "node scripts/merge.js",
+    "build:mp": "node scripts/build-mp-engine.js",
+    "build:mpicons": "node scripts/build-mp-icons.js",
+    "build": "npm run build:mp && npm run build:mpicons && npm run build:merge",
+    "test": "node tests/run.js && node tests/ui_static.js",
+    "test:mp": "node scripts/check-mp.js",
+    "test:mp:selftest": "node scripts/check-mp.js --selftest",
+    "test:ui:selftest": "node tests/ui_static.js --selftest",
+    "test:all": "npm test && npm run test:ui:selftest && npm run test:mp:selftest && npm run test:mp",
+    "verify": "npm run build && npm run test:all"
+  },
+  "pre-commit": {
+    "command": "node scripts/merge.js && node tests/run.js && node tests/ui_static.js && node scripts/check-mp.js",
+    "description": "V1.6 P1-1 / V1.6.2：commit 前自动重合并 + 引擎测试 + UI 一致性校验 + 小程序自检，确保交付物与源文件同步"
+  }
+}

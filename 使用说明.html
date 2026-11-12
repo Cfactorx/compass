@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>罗盘分金 · 使用说明</title>
+<style>
+:root{
+  --bg:#FFF8F1; --card:#fff; --ink:#3D3229; --muted:#8B7D6E;
+  --primary:#EF7D2D; --primary-deep:#D96A1F; --primary-soft:#FDEEE2;
+  --line:#F0E2D2; --red:#C2402A; --good:#2E8B57; --warn:#E8A33D;
+  --severe:#8B1A1A;
+  --shadow:0 4px 16px rgba(217,106,31,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1C1815; --card:#282320; --ink:#EDE4DA; --muted:#A2958A;
+    --primary:#F5924A; --primary-deep:#FFB37A; --primary-soft:#3A2C22;
+    --line:#3A322C;
+    --shadow:0 4px 16px rgba(0,0,0,.35);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.75;
+  padding:0 0 calc(env(safe-area-inset-bottom) + 40px);
+  font-size:15px;
+}
+header{
+  background:linear-gradient(135deg,#EF7D2D 0%,#F09A4B 100%);color:#fff;
+  padding:calc(env(safe-area-inset-top) + 26px) 20px 22px;
+}
+header h1{font-size:22px;font-weight:800;letter-spacing:1.5px}
+header .sub{font-size:12.5px;opacity:.9;margin-top:6px;letter-spacing:.5px}
+header .school{font-size:11.5px;opacity:.8;letter-spacing:1.5px;margin-top:3px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+.toc{
+  background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+  padding:14px 16px;margin:-14px 0 18px;position:relative;
+}
+.toc .t{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:8px}
+.toc a{
+  display:inline-block;font-size:13px;color:var(--primary-deep);text-decoration:none;
+  background:var(--primary-soft);border-radius:8px;padding:4px 10px;margin:3px 4px 3px 0;
+}
+h2{
+  font-size:17px;font-weight:800;color:var(--primary-deep);
+  margin:26px 0 12px;padding-left:11px;border-left:4px solid var(--primary);
+  letter-spacing:.3px;line-height:1.4;
+}
+h3{font-size:15px;font-weight:700;margin:18px 0 8px;color:var(--ink)}
+section{
+  background:var(--card);border-radius:14px;box-shadow:var(--shadow);
+  padding:16px 18px;margin-bottom:14px;
+}
+p{margin:8px 0}
+ol,ul{margin:8px 0 8px 22px}
+li{margin:5px 0}
+li::marker{color:var(--primary);font-weight:700}
+code{
+  background:var(--primary-soft);color:var(--primary-deep);
+  border-radius:5px;padding:1px 6px;font-size:12.5px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+}
+strong{color:var(--ink);font-weight:700}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.5px}
+tr:last-child td{border-bottom:none}
+td:first-child{white-space:nowrap}
+.tip{
+  background:var(--primary-soft);border-radius:11px;padding:11px 14px;
+  font-size:13.5px;margin:12px 0;border-left:3px solid var(--primary);
+}
+.tip b{color:var(--primary-deep)}
+.warnbox{
+  background:#FBE7E2;border-radius:11px;padding:11px 14px;font-size:13.5px;
+  margin:12px 0;border-left:3px solid var(--red);color:#8C2C1C;
+}
+@media (prefers-color-scheme: dark){ .warnbox{background:#3B211A;color:#F0B7A8} }
+.warnbox b{color:var(--red)}
+.tag{font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;display:inline-block}
+.tag.ok{background:#E4F3EA;color:var(--good)}
+.tag.bad{background:#FBE7E2;color:var(--red)}
+.tag.severe{background:#8B1A1A;color:#fff;border:1.5px solid #5A0F0F;font-weight:800}
+@media (prefers-color-scheme: dark){
+  .tag.ok{background:#1E3327;color:#6FCF9B}
+  .tag.bad{background:#3B211A;color:#F0857A}
+}
+.phone{
+  background:var(--bg);border:2px solid var(--line);border-radius:12px;
+  padding:12px 14px;margin:12px 0;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:12.5px;line-height:2;color:var(--muted);white-space:pre;overflow-x:auto;
+}
+.arrow-flow{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0;font-size:13px;
+}
+.step{
+  background:var(--primary-soft);color:var(--primary-deep);border-radius:9px;
+  padding:7px 12px;font-weight:700;white-space:nowrap;
+}
+.step-num{
+  display:inline-block;width:19px;height:19px;line-height:19px;text-align:center;
+  background:var(--primary);color:#fff;border-radius:50%;font-size:11px;margin-right:5px;
+}
+.faq-q{font-weight:700;color:var(--primary-deep);margin-top:16px;font-size:14.5px}
+.faq-q:first-child{margin-top:4px}
+.disclaim{
+  background:var(--card);border:1.5px solid var(--red);border-radius:13px;
+  padding:15px 17px;font-size:13px;color:var(--muted);line-height:1.8;
+}
+.disclaim b{color:var(--red);display:block;margin-bottom:6px;font-size:14px}
+footer{
+  text-align:center;font-size:11.5px;color:var(--muted);
+  padding:26px 16px 10px;line-height:1.9;
+}
+.kbd{
+  display:inline-block;background:var(--card);border:1px solid var(--line);
+  border-bottom-width:2px;border-radius:6px;padding:0 6px;font-size:12px;
+  color:var(--ink);
+}
+.legend{display:flex;flex-direction:column;gap:7px;margin:10px 0}
+.legend-row{display:flex;align-items:center;gap:9px;font-size:13.5px}
+.legend-row .tag{flex-shrink:0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>罗盘分金 · 使用说明</h1>
+    <div class="sub">基于地图坐标定位的三合盘分金罗盘 · 手机网页版</div>
+    <div class="school">磁偏角模型 WMM2025 · 一百二十分金 / 二百四十分金</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc">
+    <div class="t">目录</div>
+    <a href="#s1">快速上手</a>
+    <a href="#s2">两种模式</a>
+    <a href="#s3">实地罗盘</a>
+    <a href="#s4">地图量测</a>
+    <a href="#s5">读懂判读结果</a>
+    <a href="#s6">设置项</a>
+    <a href="#s7">测量记录</a>
+    <a href="#s8">常见问题</a>
+    <a href="#s9">技术说明</a>
+  </nav>
+
+  <h2 id="s1">一、30 秒快速上手</h2>
+  <section>
+    <div class="arrow-flow">
+      <span class="step"><span class="step-num">1</span>打开页面</span>
+      <span>→</span>
+      <span class="step"><span class="step-num">2</span>允许定位</span>
+      <span>→</span>
+      <span class="step"><span class="step-num">3</span>授权传感器</span>
+      <span>→</span>
+      <span class="step"><span class="step-num">4</span>拿手机读盘</span>
+    </div>
+    <ol>
+      <li>打开页面 → 浏览器提示定位时点「允许」（用来算当地磁偏角）</li>
+      <li>授权方向传感器 → 首次触摸罗盘盘面时弹出权限请求，点「允许」</li>
+      <li>拿着手机读盘 → 判读卡自动显示「坐什么山 · 什么向 · 吉凶」</li>
+    </ol>
+    <div class="tip">
+      💡 网页版无需安装，手机浏览器打开即可。建议<b>加到主屏幕</b>，下次一键直达。
+    </div>
+  </section>
+
+  <h2 id="s2">二、两种模式，怎么选</h2>
+  <section>
+    <table>
+      <thead><tr><th>模式</th><th>用在哪</th><th>需要什么</th></tr></thead>
+      <tbody>
+        <tr><td><strong>实地罗盘</strong></td><td>人在现场（看房、看地、量朝向）</td><td>手机方向传感器</td></tr>
+        <tr><td><strong>地图量测</strong></td><td>人不在现场（量地图、卫星图、算已知坐标）</td><td>只需知道坐向点位置</td></tr>
+      </tbody>
+    </table>
+    <p>顶部两个标签页切换，随时可换。</p>
+  </section>
+
+  <h2 id="s3">三、实地罗盘（现场测朝向）</h2>
+
+  <h3>3.1 怎么拿手机</h3>
+  <section>
+    <div class="phone">  ┌──────────────┐
+  │   手机平放    │  ← 屏幕朝上，水平端稳
+  │   不要倾斜    │
+  └──────────────┘
+        ↑
+  手机顶部指向 向方</div>
+    <ul>
+      <li><strong>手机顶部指向的方向 = 向方</strong>，罗盘自动判出坐方（坐 = 向 + 180°）</li>
+      <li>保持手机<strong>水平</strong>，倾斜会导致读数不准</li>
+      <li>远离<strong>钢筋、电器、金属门框、汽车</strong>——磁场干扰会让罗盘乱摆</li>
+    </ul>
+  </section>
+
+  <h3>3.2 界面元素</h3>
+  <section>
+    <table>
+      <thead><tr><th>元素</th><th>位置</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td><strong>罗盘盘面</strong></td><td>中间大圆</td><td>二十四山 / 分金格 / 八卦 / 龙脉层，随手机转动</td></tr>
+        <tr><td><strong>盘面徽标</strong></td><td>盘面上方胶囊</td><td>当前向方度数与所落分金</td></tr>
+        <tr><td><strong>传感器状态条</strong></td><td>盘面下方</td><td>绿点=已连传感器；黄点=相对方位模式；灰点=未检测到</td></tr>
+        <tr><td><strong>判读卡</strong></td><td>状态条下方</td><td>核心结果（见第五节）</td></tr>
+        <tr><td><strong>手动转盘</strong></td><td>无传感器时才出现</td><td>拖滑块手动输入向方度数</td></tr>
+        <tr><td><strong>校准指南针</strong></td><td>卡片下方左按钮</td><td>打开校准引导</td></tr>
+        <tr><td><strong>保存记录</strong></td><td>卡片下方右按钮</td><td>存进「测量记录」</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <h3>3.3 罗盘乱摆 / 不准？先校准</h3>
+  <section>
+    <p>点 <strong>「校准指南针」</strong>，按提示做：</p>
+    <ol>
+      <li>手机拿稳，在空中画 <strong>8 字</strong>（或缓慢绕三圈）</li>
+      <li>远离金属、磁铁、电器、音响、车体</li>
+      <li>若提示「附近可能有磁场干扰」，换个位置再测</li>
+    </ol>
+  </section>
+
+  <h3>3.4 手机没有方向传感器？</h3>
+  <section>
+    <p>系统会自动显示 <strong>「手动转盘」</strong>：</p>
+    <ul>
+      <li>拖滑块到已知的向方度数，判读照常出结果</li>
+      <li>或改用「地图量测」模式（不需要传感器）</li>
+    </ul>
+  </section>
+
+  <h3>3.5 iPhone 用户注意</h3>
+  <section>
+    <p>iOS 需要<strong>先触摸一下罗盘盘面</strong>才会弹权限请求（系统限制，必须由用户操作触发）。</p>
+    <ul>
+      <li>页面会显示橙色脉冲提示 <code>📍 点此开启指南针权限</code> → 点它</li>
+      <li>或者等 <strong>3 秒</strong>，权限弹窗会自动出现</li>
+      <li>之前误点「不允许」：iPhone <strong>设置 → Safari → 网站设置 → 动作与方向</strong> 改回允许，刷新页面</li>
+    </ul>
+  </section>
+
+  <h2 id="s4">四、地图量测（地图上量坐向）</h2>
+  <section>
+    <p>适合「没到现场，但知道位置」的场景——比如量一套房子、一块地的朝向。</p>
+
+    <h3>4.1 三步测量</h3>
+    <table>
+      <thead><tr><th>步骤</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr><td><strong>① 选「坐」点</strong></td><td><strong>长按地图</strong>（约 0.35 秒）→ 出现红色「坐」圆点。长按瞬间有橙色光圈反馈</td></tr>
+        <tr><td><strong>② 定「向」点</strong></td><td><strong>拖动橙色圆手柄</strong> → 两点间出现橙色虚线，<strong>箭头 ▶ 指向向方</strong></td></tr>
+        <tr><td><strong>③ 读结果</strong></td><td>下方判读卡自动显示坐山/向山/分金/吉凶</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">
+      橙色虚线 + <b>▶ 箭头</b> 表示「从坐指向向」，箭头方向就是向方。
+    </div>
+
+    <h3>4.2 地图工具</h3>
+    <table>
+      <thead><tr><th>按钮</th><th>功能</th></tr></thead>
+      <tbody>
+        <tr><td><strong>＋ / －</strong></td><td>缩放地图（右下角竖排）</td></tr>
+        <tr><td><strong>◎</strong></td><td>定位到当前 GPS 位置</td></tr>
+        <tr><td><strong>纬度 / 经度输入框</strong></td><td>手动输入坐标跳转（左下角）→ 点「跳转」</td></tr>
+      </tbody>
+    </table>
+    <div class="warnbox">
+      <b>缩放建议</b>：判读精度依赖两点实际距离。<strong>请放大到 ≥10 级</strong>再选点，否则两点可能相距好几公里，判读意义不大（系统会提示）。
+    </div>
+
+    <h3>4.3 坐标输入说明</h3>
+    <ul>
+      <li>输入的是 <strong>GCJ-02（火星坐标，国内地图标准）</strong></li>
+      <li>如果手上是 GPS 原始经纬度（WGS-84），需自行换算</li>
+      <li>纬度范围 -85~85，经度 -180~180</li>
+    </ul>
+
+    <h3>4.4 地图底图加载不出来？</h3>
+    <p>网络不通或瓦片服务不可用时，自动切换成<strong>坐标网格</strong>——<strong>量测判读完全不受影响</strong>，只是看不到街道底图。</p>
+  </section>
+
+  <h2 id="s5">五、怎么读懂判读结果</h2>
+
+  <h3>5.1 结论行</h3>
+  <section>
+    <div class="phone">坐子山午向 · 正向  [吉 · 旺]
+ └─坐山  └─向山  └─兼向状态  └─吉凶标签</div>
+    <p><strong>兼向状态</strong>有三种：</p>
+    <table>
+      <thead><tr><th>显示</th><th>偏出中线</th><th>含义</th></tr></thead>
+      <tbody>
+        <tr><td>正向</td><td>≤ 1.5°</td><td>坐线在格正中，最理想</td></tr>
+        <tr><td>兼 N 分</td><td>1.5° ~ 4.5°</td><td>略微偏向相邻格</td></tr>
+        <tr><td>过重</td><td>&gt; 4.5°</td><td>偏得太多，一般不建议</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <h3>5.2 吉凶标签（颜色分级）</h3>
+  <section>
+    <div class="legend">
+      <div class="legend-row"><span class="tag ok">吉 · 旺</span><span>可用 —— 旺 / 相 分金，孤虚旺相里的好格</span></div>
+      <div class="legend-row"><span class="tag bad">凶 · 孤</span><span>不利 —— 孤 / 虚 分金，普通凶格</span></div>
+      <div class="legend-row"><span class="tag severe">⚠ 空亡 · 大空亡</span><span><strong>大凶</strong> —— 骑在山界/卦界线上，最严重，必须避开</span></div>
+    </div>
+    <div class="warnbox">
+      <b>空亡用最重的视觉样式</b>单独标出——它是玄学上最需要回避的情况，与普通「凶」有本质区别。
+    </div>
+  </section>
+
+  <h3>5.3 信息胶囊</h3>
+  <section>
+    <table>
+      <thead><tr><th>胶囊</th><th>内容</th></tr></thead>
+      <tbody>
+        <tr><td>分金 xxx（旺/相/孤/虚）</td><td>当前坐山所落的分金干支与属性</td></tr>
+        <tr><td>磁北 xxx° / 真北 xxx°</td><td>两个参考系的向方度数（定位成功时同时显示）</td></tr>
+        <tr><td>⚠ 空亡提示</td><td>命中空亡线时才出现</td></tr>
+        <tr><td>建议：xxx</td><td>本山可用的旺相分金建议</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <h3>5.4 专业参数面板</h3>
+  <section>
+    <p>默认展开，包含：</p>
+    <ul>
+      <li><strong>判读结论</strong>：完整一句话结论</li>
+      <li><strong>坐方度数 / 向方度数</strong>：精确到 0.01°</li>
+      <li><strong>偏出中线</strong>：偏了多少度 + 落在正向/兼向/过重哪个域</li>
+      <li><strong>分金格</strong>：干支 + 覆盖的度数区间 + 格宽（120 分金 3°格 / 240 分金 1.5°格）</li>
+      <li><strong>穿山龙</strong>（开启后）：所在龙 + 纳音 + 五行 + 吉凶</li>
+      <li><strong>透地龙</strong>（开启后）：同上</li>
+      <li><strong>磁偏角</strong>：当地磁偏角值 + 东偏/西偏 + 模型名</li>
+      <li><strong>真北换算</strong>：真北 = 磁北 ± 磁偏角</li>
+      <li><strong>判定依据</strong>：盘式与规则说明（地盘正针 · 三合盘）</li>
+    </ul>
+  </section>
+
+  <h2 id="s6">六、设置项说明</h2>
+  <section>
+    <p>点右上角 <strong>⚙️</strong> 进入。</p>
+    <table>
+      <thead><tr><th>设置</th><th>选项</th><th>怎么选</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>分金体系</strong></td><td>120 分金 / 240 分金</td>
+          <td>三合主流用 <strong>120</strong>（每山 5 格，3°）；要更细分用 <strong>240</strong>（每格 1.5°）</td>
+        </tr>
+        <tr>
+          <td><strong>空亡判定宽度</strong></td><td>±0.5° / ±1° / ±1.5°</td>
+          <td>坐线距山界多少度内报警。<strong>默认 ±1.5°</strong>；要求严格就调小</td>
+        </tr>
+        <tr>
+          <td><strong>坐标格式</strong></td><td>度 / 度分秒</td>
+          <td>影响顶栏坐标显示。日常用「度」</td>
+        </tr>
+        <tr>
+          <td><strong>盘面风格</strong></td><td>现代 / 仿古</td>
+          <td>纯外观。仿古更接近实体罗盘的配色与字形</td>
+        </tr>
+        <tr>
+          <td><strong>真北修正</strong></td><td>开 / 关</td>
+          <td><strong>默认关（用磁北）</strong>，与实体罗盘一致。见下方说明</td>
+        </tr>
+        <tr>
+          <td><strong>穿山七十二龙</strong></td><td>开 / 关</td>
+          <td>开启后盘面多一圈「格龙层」，判读卡多加龙信息行</td>
+        </tr>
+        <tr>
+          <td><strong>透地六十龙</strong></td><td>开 / 关</td>
+          <td>开启后多一圈「透地层」</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warnbox">
+      <b>⚠ 真北 / 磁北怎么选？</b>
+      <table style="margin-top:8px">
+        <thead><tr><th>参考系</th><th>说明</th><th>适用</th></tr></thead>
+        <tbody>
+          <tr><td><strong>磁北</strong>（默认）</td><td>磁罗盘实际指向</td><td><strong>与实体罗盘读数一致</strong>，实地对照用这个</td></tr>
+          <tr><td><strong>真北</strong></td><td>地理正北</td><td>与地图/卫星图/图纸对照，或要求真北体系判读时开启</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>开关打开后，<strong>盘面和判读卡会立刻刷新</strong>，不用晃动手机。</p>
+  </section>
+
+  <h2 id="s7">七、测量记录</h2>
+  <section>
+    <p>点右上角 <strong>📜</strong> 进入。</p>
+    <ul>
+      <li><strong>保存</strong>：实地罗盘 / 地图量测各有「保存记录」按钮</li>
+      <li><strong>内容</strong>：时间、模式、结论、坐山向山、分金、属性、坐方度数、当时的磁偏角</li>
+      <li><strong>上限</strong>：保留最近 <strong>50 条</strong>（超出自动淘汰最早的）</li>
+      <li><strong>删除</strong>：每条右侧「删除」按钮</li>
+    </ul>
+    <div class="tip">
+      V1.4 起「手工排盘」功能已合并到「<b>地图量测</b>」，旧记录会自动归到地图量测。
+    </div>
+  </section>
+
+  <h2 id="s8">八、常见问题排查</h2>
+  <section>
+    <div class="faq-q">Q：罗盘盘面不动 / 一直显示「尚未获取方向传感器数据」</div>
+    <p>按顺序排查：</p>
+    <ol>
+      <li><strong>权限没给</strong>（最常见）
+        <ul>
+          <li>Android：地址栏左侧 🔒 → 网站设置 → 运动与方向传感器 → 允许，然后刷新</li>
+          <li>iOS：iPhone 设置 → Safari → 动作与方向 → 打开</li>
+        </ul>
+      </li>
+      <li><strong>没触发权限请求</strong>：iOS 需先触摸罗盘盘面（点橙色脉冲提示），或等 3 秒自动弹窗</li>
+      <li><strong>设备没有传感器</strong>：部分平板、老旧手机没有磁力计 → 用「手动转盘」或「地图量测」</li>
+      <li><strong>浏览器不支持</strong>：换 Safari / Chrome。部分微信内置浏览器限制传感器，可点右上角「在浏览器打开」</li>
+    </ol>
+
+    <div class="faq-q">Q：读数一直在跳 / 明显不准</div>
+    <ul>
+      <li><strong>在校准</strong>：点「校准指南针」，画 8 字</li>
+      <li><strong>有磁场干扰</strong>：远离金属、电器、磁铁、车内、钢筋结构——<strong>最常见原因</strong></li>
+      <li><strong>手机没放平</strong>：端稳，尽量水平</li>
+      <li><strong>状态显示「相对方位模式」</strong>：说明设备只提供相对角度（不是绝对方位），只能手动校零后参考。建议改用「地图量测」</li>
+      <li><strong>刚切回前台</strong>：从后台回来时读数会短暂重置，等一两秒稳定</li>
+    </ul>
+
+    <div class="faq-q">Q：地图模式长按没反应</div>
+    <ul>
+      <li>长按要<strong>保持约 0.35 秒</strong>不动（手指移动超过 8px 会取消长按）</li>
+      <li>看看是否已放大到合适级别</li>
+      <li>键盘弹不出来时，直接点输入框即可（V1.6.1 起已修复触摸拦截）</li>
+    </ul>
+
+    <div class="faq-q">Q：保存失败 / 记录丢失</div>
+    <ul>
+      <li><strong>隐私模式</strong>：Safari 无痕模式无法保存，页面会提示「存储不可用，记录未保存（刷新即丢失）」。改用普通模式</li>
+      <li><strong>存储已满</strong>：清理一些旧记录</li>
+      <li>记录存在<strong>本机浏览器</strong>里，<strong>不会上传</strong>，换浏览器/清缓存会丢</li>
+    </ul>
+
+    <div class="faq-q">Q：地图底图一片空白</div>
+    <p>底图服务不可用时会自动降级为<strong>网格底图</strong>，<strong>量测功能完全正常</strong>。换网络或稍后重试可能恢复。</p>
+  </section>
+
+  <h2 id="s9">九、技术说明与免责</h2>
+  <section>
+    <h3>判读体系</h3>
+    <ul>
+      <li><strong>盘式</strong>：地盘正针 · 三合盘 · 一百二十分金 / 二百四十分金</li>
+      <li><strong>孤虚旺相</strong>：丙庚旺 · 丁辛相 · 甲壬孤 · 乙癸虚 · 戊己空亡</li>
+      <li><strong>空亡线</strong>：卦界大空亡（22.5° + 45°×k）· 山界小空亡（7.5° + 15°×k）</li>
+      <li><strong>磁偏角模型</strong>：WMM2025（世界地磁模型 2025 纪元）</li>
+      <li><strong>坐标系统</strong>：GCJ-02（火星坐标，与国内地图一致）</li>
+    </ul>
+
+    <h3>精度说明</h3>
+    <ul>
+      <li>磁偏角计算精度：参考城市实测误差 ≤ 0.0005°</li>
+      <li>判读度数精度：0.01°</li>
+      <li>地图量测精度：取决于缩放级别与选点仔细程度。<strong>低缩放级别下两点距离可能达数公里，判读仅供参考</strong></li>
+    </ul>
+
+    <h3>数据与隐私</h3>
+    <ul>
+      <li><strong>不联网上传任何数据</strong>：坐标、记录、设置全部存本机浏览器</li>
+      <li>地图底图来自公开瓦片服务</li>
+      <li>定位仅用于计算当地磁偏角与地图居中</li>
+    </ul>
+  </section>
+
+  <div class="disclaim">
+    <b>⚠️ 免责声明</b>
+    判读结果仅供参考，<strong>不构成任何决策建议</strong>。<br><br>
+    本工具为传统堪舆方法的数字化辅助工具，所依据的分金、空亡、孤虚旺相、龙脉等属传统术数体系，不具备现代科学验证基础。涉及房产交易、工程建设、法律事务等重大决策，请咨询专业人士并依据客观测量数据独立判断。
+  </div>
+
+  <div class="tip" style="margin-top:14px">
+    <b>离线可用</b>：除地图底图外，全部功能离线可用。<br>
+    <b>使用形态</b>：单文件网页，可本地直开或静态托管。
+  </div>
+</div>
+
+<footer>
+  罗盘分金 · 三合盘分金罗盘 · 版 V1.6.1<br>
+  — powered by 吕庆新 —
+</footer>
+
+</body>
+</html>

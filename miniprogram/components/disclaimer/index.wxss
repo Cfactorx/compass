@@ -1,0 +1,24 @@
+.disclaim {
+  font-size: 20rpx;
+  color: #B0A494;
+  line-height: 1.7;
+  margin: 28rpx 8rpx 8rpx;
+  text-align: center;
+}
+.disclaim-full {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 28rpx;
+  box-shadow: 0 8rpx 32rpx rgba(217, 106, 31, .10);
+}
+.disclaim-full .df-title {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #D96A1F;
+  margin-bottom: 14rpx;
+}
+.disclaim-full .df-body {
+  font-size: 24rpx;
+  color: #8A7A6D;
+  line-height: 1.85;
+}

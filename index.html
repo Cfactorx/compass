@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#EF7D2D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>罗盘分金 · 手机智能罗盘 --powered by 吕庆新</title>
+<style>
+:root{
+  --primary:#EF7D2D; --primary-deep:#D96A1F; --primary-soft:#FBE9D8;
+  --ink:#3D3229; --muted:#8A7A6D; --bg:#FFF6EE; --card:#FFFFFF;
+  --line:#F0E2D2; --red:#C2402A; --good:#2E8B57; --warn:#E8A33D;
+  --shadow:0 4px 16px rgba(217,106,31,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+header{background:linear-gradient(135deg,#EF7D2D 0%,#F09A4B 100%);color:#fff;
+  padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+header .brand{font-size:19px;font-weight:700;letter-spacing:1px;white-space:nowrap;line-height:1.15}
+header .brand .pb{font-size:10px;font-weight:500;letter-spacing:0;opacity:.88}
+header .brand .school{font-size:10.5px;font-weight:500;letter-spacing:1.5px;opacity:.82;display:block;margin-top:1px}
+header .chipbar{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+header .chip{font-size:10.5px;background:rgba(255,255,255,.18);border-radius:10px;padding:2px 8px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+header .chip.warn{background:rgba(232,80,60,.55)}
+.iconbtn{background:rgba(255,255,255,.22);border:none;color:#fff;width:34px;height:34px;border-radius:10px;
+  font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+nav.tabs{display:flex;background:var(--card);box-shadow:var(--shadow);z-index:5;flex-shrink:0}
+nav.tabs button{flex:1;border:none;background:none;padding:11px 0 9px;font-size:15px;color:var(--muted);
+  font-weight:600;cursor:pointer;position:relative}
+nav.tabs button.active{color:var(--primary)}
+nav.tabs button.active::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:4px;
+  width:26px;height:3px;border-radius:2px;background:var(--primary)}
+main{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+section.view{display:none;padding:12px 12px 20px;animation:fadein .25s}
+section.view.active{display:block}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+#view-map.active{display:flex;flex-direction:column;padding:0;height:100%}
+#view-map.active .map-area{flex:1;min-height:260px;position:relative}
+/* P0-1：把 .map-tools/.coord-input-row 的定位基准改到 #view-map.active（移出 mapArea 后生效） */
+#view-map.active{position:relative}
+#view-map.active .map-tools{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:8px;z-index:5}
+#view-map.active .coord-input-row{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;align-items:center;z-index:5}
+#view-map.active .card{margin:10px 12px 16px}
+.compass-wrap{position:relative;max-width:430px;margin:0 auto}
+#compassCanvas{width:100%;display:block;cursor:pointer;touch-action:manipulation}
+/* iOS 用户引导：未授权时罗盘盘面浮起"点此开启指南针"提示层 */
+  #compassCanvas.need-perm{cursor:pointer}
+  #compassCanvas.need-perm::after{content:"📍 点此开启指南针权限";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(239,125,45,.92);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:24px;box-shadow:0 4px 12px rgba(0,0,0,.25);pointer-events:none;animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
+.dial-badge{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.92);border:1px solid var(--line);color:var(--ink);
+  font-size:13px;font-weight:700;padding:4px 12px;border-radius:14px;box-shadow:var(--shadow);white-space:nowrap}
+.sensor-strip{display:flex;align-items:center;gap:6px;justify-content:center;margin:8px 0 0;
+  font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.sensor-strip .dot{width:7px;height:7px;border-radius:50%;background:#B8AFA6;display:inline-block}
+.sensor-strip .dot.ok{background:var(--good)} .sensor-strip .dot.warn{background:var(--warn)}
+.manual-box{max-width:430px;margin:10px auto 0;display:none}
+.manual-box.show{display:block}
+.manual-box input[type=range]{width:100%;accent-color:var(--primary)}
+.manual-box .mrow{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px 14px 10px;
+  margin-top:14px;max-width:640px;margin-left:auto;margin-right:auto}
+.card .conc{font-size:18px;font-weight:800;line-height:1.45;letter-spacing:.5px}
+.card .conc .tag{font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+.tag.ok{background:#E4F3EA;color:var(--good)} .tag.bad{background:#FBE7E2;color:var(--red)}
+.tag.severe{background:#8B1A1A;color:#fff;border:1.5px solid #5A0F0F;font-weight:800;letter-spacing:.5px;
+  box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.chips span{font-size:11.5px;background:#FAF3EA;color:#7A6A5B;border-radius:8px;padding:3px 9px}
+.chips span.hl{background:var(--primary-soft);color:var(--primary-deep);font-weight:700}
+details.params{border-top:1px dashed var(--line);margin-top:10px;padding-top:8px}
+details.params summary{font-size:12.5px;color:var(--muted);cursor:pointer;list-style:none;display:flex;align-items:center;gap:4px}
+details.params summary::-webkit-details-marker{display:none}
+details.params summary::before{content:"▸";transition:.2s}
+details.params[open] summary::before{transform:rotate(90deg)}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:4px 8px;margin-top:8px;font-size:12.5px}
+.kv b{color:var(--muted);font-weight:400}
+.card-actions{display:flex;gap:8px;margin-top:12px}
+.btn{border:none;border-radius:10px;padding:9px 14px;font-size:13.5px;font-weight:700;cursor:pointer;
+  background:var(--primary);color:#fff;flex:1}
+.btn.ghost{background:#FAF0E5;color:var(--primary-deep)}
+.btn:active{opacity:.82}
+.disclaim{font-size:10.5px;color:#B0A494;text-align:center;margin-top:10px}
+.map-area{background:#EDE4D8;overflow:hidden;touch-action:none;position:relative}
+#mapTiles{position:absolute;inset:0}
+#mapTiles img{position:absolute;width:256px;height:256px;user-select:none;-webkit-user-drag:none}
+#mapOverlay{position:absolute;inset:0;pointer-events:none}
+.map-tools{position:absolute;right:10px;bottom:14px;display:flex;flex-direction:column;gap:8px;z-index:4}
+.map-tools button{width:38px;height:38px;border-radius:11px;border:none;background:rgba(255,255,255,.95);
+  box-shadow:var(--shadow);font-size:17px;color:var(--primary-deep);cursor:pointer}
+.map-tools button:active{background:var(--primary-soft)}
+.map-hint{position:absolute;left:10px;top:10px;z-index:4;background:rgba(255,255,255,.9);border-radius:10px;
+  padding:6px 10px;font-size:11px;color:var(--muted);max-width:78%}
+.map-hint b{color:var(--primary-deep)}
+.map-degrade{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:4;display:none;
+  background:#FBE7E2;color:var(--red);font-size:11px;border-radius:9px;padding:4px 10px}
+.coord-input-row{display:flex;gap:6px;align-items:center;position:absolute;left:10px;bottom:14px;z-index:5;pointer-events:auto}
+.coord-input-row input{width:104px;border:none;border-radius:9px;padding:7px 9px;font-size:12px;
+  background:rgba(255,255,255,.95);box-shadow:var(--shadow);color:var(--ink);
+  touch-action:auto;-webkit-user-select:auto;user-select:auto;pointer-events:auto}
+.coord-input-row button{border:none;border-radius:9px;padding:8px 10px;font-size:12px;font-weight:700;  background:var(--primary);color:#fff;
+  touch-action:auto;pointer-events:auto}
+
+.page{position:fixed;inset:0;background:var(--bg);z-index:50;display:none;flex-direction:column}
+.page.show{display:flex}
+.page .page-head{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 12px) 14px 12px;
+  background:linear-gradient(135deg,#EF7D2D 0%,#F09A4B 100%);color:#fff}
+.page .page-head h2{font-size:17px;flex:1}
+.page .page-body{flex:1;overflow-y:auto;padding:12px 14px 30px}
+.rec-item{background:var(--card);border-radius:13px;box-shadow:var(--shadow);padding:12px;margin-bottom:10px}
+.rec-item .rt{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.rec-item .rc{font-size:14px;font-weight:700;line-height:1.5}
+.rec-item .rm{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.6}
+.rec-item .del{border:none;background:#FBE7E2;color:var(--red);border-radius:8px;padding:5px 10px;font-size:12px;margin-top:8px}
+.empty{color:var(--muted);text-align:center;font-size:13px;padding:40px 0}
+.set-group{background:var(--card);border-radius:13px;box-shadow:var(--shadow);padding:4px 14px;margin-bottom:12px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);gap:10px}
+.set-row:last-child{border-bottom:none}
+.set-row .lab{font-size:14px}
+.set-row .lab small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.seg{display:flex;background:#F4EADB;border-radius:9px;padding:2px;gap:2px}
+.seg button{border:none;background:none;padding:6px 11px;border-radius:7px;font-size:12.5px;color:var(--muted);
+  cursor:pointer;font-weight:600}
+.seg button.on{background:#fff;color:var(--primary-deep);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.switch{position:relative;width:46px;height:26px;border-radius:13px;background:#E5D9CB;cursor:pointer;
+  transition:.2s;border:none;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+  background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on{background:var(--primary)}
+.switch.on::after{left:23px}
+.overlay{position:fixed;inset:0;background:rgba(40,28,18,.55);backdrop-filter:blur(3px);z-index:99;
+  display:none;align-items:center;justify-content:center;padding:24px}
+.overlay.show{display:flex}
+.dialog{background:var(--card);border-radius:18px;padding:22px 18px;max-width:340px;width:100%;
+  text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.dialog h3{font-size:17px;margin-bottom:10px}
+.dialog p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+.dialog .btn{width:100%;flex:none}
+.dialog .btn+.btn{margin-top:8px}
+.dialog .btn.ghost{background:#F4EADB;color:var(--ink)}
+.eight{width:88px;height:88px;margin:0 auto 12px;border-radius:50%;border:3px solid var(--primary-soft);
+  position:relative;animation:spin8 3.2s ease-in-out infinite}
+.eight::after{content:"📱";position:absolute;font-size:30px;top:50%;left:50%;transform:translate(-50%,-50%)}
+@keyframes spin8{0%{transform:rotate(0)}25%{transform:rotate(60deg)}50%{transform:rotate(-30deg)}
+  75%{transform:rotate(120deg)}100%{transform:rotate(0)}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(20px);background:rgba(61,50,41,.92);color:#fff;font-size:13px;
+  padding:10px 18px;border-radius:12px;opacity:0;transition:.3s;z-index:120;pointer-events:none;max-width:86%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">罗盘分金<span class="school">三合盘 · 二十四山 · 纳音五行</span><span class="pb"> --powered by 吕庆新</span></div>
+  <div class="chipbar">
+    <div class="chip" id="chipCoord">📍 坐标：未定位</div>
+    <div class="chip" id="chipDecl">🧭 磁偏角：未定位</div>
+  </div>
+  <button class="iconbtn" id="btnRecords" title="记录">📜</button>
+  <button class="iconbtn" id="btnSettings" title="设置">⚙️</button>
+</header>
+
+<nav class="tabs">
+  <button data-tab="live" class="active">实地罗盘</button>
+  <button data-tab="map">地图量测</button>
+</nav>
+
+<main>
+  <section class="view active" id="view-live">
+    <div class="compass-wrap">
+      <canvas id="compassCanvas"></canvas>
+      <div class="dial-badge" id="dialBadge">— · —</div>
+    </div>
+    <div class="sensor-strip" id="sensorStrip">
+      <span class="dot" id="sensorDot"></span><span id="sensorText">正在检测方向传感器…</span>
+    </div>
+    <div class="manual-box" id="manualBox">
+      <div class="mrow"><span>手动转盘（无传感器时可用）</span><span id="manualVal">0.0°</span></div>
+      <input type="range" id="manualRange" min="0" max="359.9" step="0.1" value="0">
+    </div>
+    <div class="card" id="liveCard"></div>
+    <!-- P2-13：actions 按钮移出 renderLiveCard html 字符串，避免每次传感器触发都重建 DOM 节点 -->
+    <div class="card-actions">
+      <button class="btn ghost" id="btnCalib">校准指南针</button>
+      <button class="btn" id="btnSaveLive">保存记录</button>
+    </div>
+    <p class="disclaim">⚠️ 判读结果仅供参考，不构成任何决策建议</p>
+  </section>
+
+  <section class="view" id="view-map">
+    <div class="map-area" id="mapArea">
+      <div id="mapTiles"></div>
+      <canvas id="mapOverlay"></canvas>
+      <div class="map-hint" id="mapHint"><b>长按地图</b>选「坐」点<br><b>拖橙圆</b>定「向」点（→表示朝向）</div>
+      <div class="map-degrade" id="mapDegrade">地图底图不可用，已切换坐标网格（量测不受影响）</div>
+    </div>
+    <!-- P0-1：交互控件移出 #mapArea，避免被 area 的 pointerdown.preventDefault 吞 focus/键盘弹起 -->
+    <div class="map-tools" data-map-ignore="true">
+      <button id="mapZoomIn" title="放大">＋</button>
+      <button id="mapZoomOut" title="缩小">－</button>
+      <button id="mapLocate" title="定位">◎</button>
+    </div>
+    <div class="coord-input-row" data-map-ignore="true">
+      <input id="inpLat" type="text" inputmode="decimal" placeholder="纬度">
+      <input id="inpLng" type="text" inputmode="decimal" placeholder="经度">
+      <button id="btnGoCoord">跳转</button>
+    </div>
+    <div class="card" id="mapCard"><p style="color:var(--muted);font-size:13px;text-align:center;padding:6px 0">尚未选点：长按地图选择坐山点</p></div>
+    <!-- P2-13：actions 按钮移出 renderMapCard html 字符串，避免每次 setSit/onLineChange 都重建 DOM 节点 -->
+    <div class="card-actions" id="mapCardActions" style="display:none">
+      <button class="btn" id="btnSaveMap">保存记录</button>
+    </div>
+    <p class="disclaim">⚠️ 判读结果仅供参考，不构成任何决策建议</p>
+  </section>
+</main>
+
+<div class="page" id="pageRecords">
+  <div class="page-head"><button class="iconbtn" id="recBack">‹</button><h2>测量记录</h2></div>
+  <div class="page-body" id="recList"></div>
+</div>
+
+<div class="page" id="pageSettings">
+  <div class="page-head"><button class="iconbtn" id="setBack">‹</button><h2>设置</h2></div>
+  <div class="page-body" id="setBody"></div>
+</div>
+
+<div class="overlay" id="permOverlay">
+  <div class="dialog">
+    <div class="eight"></div>
+    <h3>开启方向传感器</h3>
+    <p>本页使用手机罗盘传感器指示方向，并使用位置信息计算当地磁偏角。<br>数据仅存本机，不会上传。</p>
+    <button class="btn" id="permBtn">开启传感器</button>
+    <button class="btn ghost" id="permSkip">暂不开启，用地图模式</button>
+  </div>
+</div>
+
+<div class="overlay" id="calibOverlay">
+  <div class="dialog">
+    <div class="eight"></div>
+    <h3>校准指南针</h3>
+    <p>请手持手机在空中<b>缓慢画 8 字</b>，旋转数圈直到提示消失；并远离金属、电器等磁场干扰源。</p>
+    <button class="btn" id="calibDone">我已校准</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/*ENGINE-START*/
+/* =====================================================================
+ * 判读引擎（纯函数，零 DOM 依赖）
+ * 模块：LUOPAN 二十四山/分金/兼向/空亡 · GEOMAG WMM2025 磁偏角
+ *       GEO 坐标转换/大圆方位角 · STORE 设置与记录（纯数据变换）
+ * ===================================================================== */
+
+/* 世界地磁模型 WMM2025 系数（来源：NOAA/NCEI WMM2025 COF，经 pygeomag 包分发）
+ * 每项: [n, m, g(nT), h(nT), g_dot(nT/yr), h_dot(nT/yr)] */
+var WMM2025={epoch:2025,c:[[1,0,-29351.8,0,12,0],[1,1,-1410.8,4545.4,9.7,-21.5],[2,0,-2556.6,0,-11.6,0],[2,1,2951.1,-3133.6,-5.2,-27.7],[2,2,1649.3,-815.1,-8,-12.1],[3,0,1361,0,-1.3,0],[3,1,-2404.1,-56.6,-4.2,4],[3,2,1243.8,237.5,0.4,-0.3],[3,3,453.6,-549.5,-15.6,-4.1],[4,0,895,0,-1.6,0],[4,1,799.5,278.6,-2.4,-1.1],[4,2,55.7,-133.9,-6,4.1],[4,3,-281.1,212,5.6,1.6],[4,4,12.1,-375.6,-7,-4.4],[5,0,-233.2,0,0.6,0],[5,1,368.9,45.4,1.4,-0.5],[5,2,187.2,220.2,0,2.2],[5,3,-138.7,-122.9,0.6,0.4],[5,4,-142,43,2.2,1.7],[5,5,20.9,106.1,0.9,1.9],[6,0,64.4,0,-0.2,0],[6,1,63.8,-18.4,-0.4,0.3],[6,2,76.9,16.8,0.9,-1.6],[6,3,-115.7,48.8,1.2,-0.4],[6,4,-40.9,-59.8,-0.9,0.9],[6,5,14.9,10.9,0.3,0.7],[6,6,-60.7,72.7,0.9,0.9],[7,0,79.5,0,0,0],[7,1,-77,-48.9,-0.1,0.6],[7,2,-8.8,-14.4,-0.1,0.5],[7,3,59.3,-1,0.5,-0.8],[7,4,15.8,23.4,-0.1,0],[7,5,2.5,-7.4,-0.8,-1],[7,6,-11.1,-25.1,-0.8,0.6],[7,7,14.2,-2.3,0.8,-0.2],[8,0,23.2,0,-0.1,0],[8,1,10.8,7.1,0.2,-0.2],[8,2,-17.5,-12.6,0,0.5],[8,3,2,11.4,0.5,-0.4],[8,4,-21.7,-9.7,-0.1,0.4],[8,5,16.9,12.7,0.3,-0.5],[8,6,15,0.7,0.2,-0.6],[8,7,-16.8,-5.2,0,0.3],[8,8,0.9,3.9,0.2,0.2],[9,0,4.6,0,0,0],[9,1,7.8,-24.8,-0.1,-0.3],[9,2,3,12.2,0.1,0.3],[9,3,-0.2,8.3,0.3,-0.3],[9,4,-2.5,-3.3,-0.3,0.3],[9,5,-13.1,-5.2,0,0.2],[9,6,2.4,7.2,0.3,-0.1],[9,7,8.6,-0.6,-0.1,-0.2],[9,8,-8.7,0.8,0.1,0.4],[9,9,-12.9,10,-0.1,0.1],[10,0,-1.3,0,0.1,0],[10,1,-6.4,3.3,0,0],[10,2,0.2,0,0.1,0],[10,3,2,2.4,0.1,-0.2],[10,4,-1,5.3,0,0.1],[10,5,-0.6,-9.1,-0.3,-0.1],[10,6,-0.9,0.4,0,0.1],[10,7,1.5,-4.2,-0.1,0],[10,8,0.9,-3.8,-0.1,-0.1],[10,9,-2.7,0.9,0,0.2],[10,10,-3.9,-9.1,0,0],[11,0,2.9,0,0,0],[11,1,-1.5,0,0,0],[11,2,-2.5,2.9,0,0.1],[11,3,2.4,-0.6,0,0],[11,4,-0.6,0.2,0,0.1],[11,5,-0.1,0.5,-0.1,0],[11,6,-0.6,-0.3,0,0],[11,7,-0.1,-1.2,0,0.1],[11,8,1.1,-1.7,-0.1,0],[11,9,-1,-2.9,-0.1,0],[11,10,-0.2,-1.8,-0.1,0],[11,11,2.6,-2.3,-0.1,0],[12,0,-2,0,0,0],[12,1,-0.2,-1.3,0,0],[12,2,0.3,0.7,0,0],[12,3,1.2,1,0,-0.1],[12,4,-1.3,-1.4,0,0.1],[12,5,0.6,0,0,0],[12,6,0.6,0.6,0.1,0],[12,7,0.5,-0.1,0,0],[12,8,-0.1,0.8,0,0],[12,9,-0.4,0.1,0,0],[12,10,-0.2,-1,-0.1,0],[12,11,-1.3,0.1,0,0],[12,12,-0.7,0.2,-0.1,-0.1]]};
+
+var LP = (function(){
+  'use strict';
+  var D2R = Math.PI/180, R2D = 180/Math.PI;
+
+  /* ---------------- LUOPAN ---------------- */
+  var MOUNTAINS = ["子","癸","丑","艮","寅","甲","卯","乙","辰","巽","巳",
+                   "丙","午","丁","未","坤","申","庚","酉","辛","戌","乾","亥","壬"];
+  var BRANCHES  = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+  var YANG_BRANCHES = ["子","寅","辰","午","申","戌"];
+  var YANG_STEMS = ["甲","丙","戊","庚","壬"];
+  var YIN_STEMS  = ["乙","丁","己","辛","癸"];
+  var NUM_CN = ["一","二","三"];
+  var STEM_ATTR = {"丙":"旺","庚":"旺","丁":"相","辛":"相",
+                   "甲":"孤","壬":"孤","乙":"虚","癸":"虚","戊":"空亡","己":"空亡"};
+
+  function norm(d){ d = d % 360; if (d < 0) d += 360; return d; }
+  function circDist(a,b){ var d = Math.abs(norm(a-b)); return d > 180 ? 360-d : d; }
+
+  /* 干维山借顺时针方向前方最近地支山之支 */
+  function branchOfMountain(i){
+    var m = MOUNTAINS[i];
+    if (BRANCHES.indexOf(m) >= 0) return m;
+    return MOUNTAINS[(i+1) % 24];
+  }
+
+  /* 一百二十分金全表（按 TDD 三要素规则生成，120 格） */
+  var FJ120 = (function(){
+    var t = [];
+    for (var i=0;i<24;i++){
+      var b = branchOfMountain(i);
+      var stems = YANG_BRANCHES.indexOf(b) >= 0 ? YANG_STEMS : YIN_STEMS;
+      var start = i*15 - 7.5;
+      for (var j=0;j<5;j++){
+        var s = start + j*3;
+        t.push({ mountainIndex:i, branch:b, stem:stems[j], ganZhi:stems[j]+b,
+                 attr:STEM_ATTR[stems[j]], slot:j,
+                 start:norm(s), end:norm(s+3), startRaw:s, endRaw:s+3 });
+      }
+    }
+    return t;
+  })();
+
+  function mountainAt(deg){
+    deg = norm(deg);
+    var idx = Math.floor(norm(deg + 7.5) / 15);
+    return { index: idx, name: MOUNTAINS[idx] };
+  }
+
+  /* 分金格查询：mode '120'（3°格）或 '240'（1.5°格，干支同父格） */
+  function fenjinAt(deg, mode){
+    deg = norm(deg);
+    var is240 = (mode === '240');
+    var mi = Math.floor(norm(deg + 7.5) / 15);
+    var base = mi*15 - 7.5;
+    var local = norm(deg - base);   /* norm 处理跨0°山（如359.9°属子山） */
+    var cw = is240 ? 1.5 : 3;
+    var nCells = is240 ? 10 : 5;
+    var slot = Math.min(nCells-1, Math.floor(local/cw));
+    var parent = FJ120[mi*5 + Math.min(4, Math.floor(local/3))];
+    var half = is240 ? (slot % 2) : 0;
+    return { ganZhi:parent.ganZhi, stem:parent.stem, attr:parent.attr,
+             slot:slot, mountainIndex:mi, mountain:MOUNTAINS[mi],
+             start:norm(parent.startRaw + half*1.5),
+             end:norm(parent.startRaw + half*1.5 + cw),
+             cellWidth:cw };
+  }
+
+  /* 同山旺相分金建议 */
+  function suggestFenjin(mountainIndex){
+    var out = [];
+    for (var j=0;j<5;j++){
+      var c = FJ120[mountainIndex*5 + j];
+      if (c.attr === '旺' || c.attr === '相')
+        out.push(c.ganZhi + '（' + c.attr + '，' + c.start.toFixed(1) + '°–' + c.end.toFixed(1) + '°）');
+    }
+    return out;
+  }
+
+  /* 空亡/骑线检测：d 为坐方度数，width 为判定宽度 */
+  function kongwangAt(d, width){
+    d = norm(d);
+    for (var k=0;k<24;k++){
+      var b = norm(7.5 + 15*k);
+      var dist = circDist(d, b);
+      if (dist <= width + 1e-9){
+        var big = ((b % 45) === 22.5);
+        return { boundary:b, dist:dist, type: big ? '大空亡' : '小空亡',
+                 label:'压' + mountainAt(b-0.01).name + mountainAt(b+0.01).name +
+                       '山界（' + (big?'大':'小') + '空亡）' };
+      }
+    }
+    return null;
+  }
+
+  /* 主判读：sitDeg = 坐方度数（向方 = 坐方+180） */
+  function analyze(sitDeg, opts){
+    opts = opts || {};
+    var width = (opts.kongwangWidth != null) ? opts.kongwangWidth : 1.5;
+    var mode = opts.fenjinMode || '120';
+    sitDeg = norm(sitDeg);
+    var facingDeg = norm(sitDeg + 180);
+
+    var sit = mountainAt(sitDeg);
+    var face = mountainAt(facingDeg);
+    var center = sit.index * 15;
+    var off = circDist(sitDeg, center);
+    var eastOf = norm(sitDeg - center) < 180;
+    var sideSitIdx = eastOf ? (sit.index+1)%24 : (sit.index+23)%24;
+    var sideSit = MOUNTAINS[sideSitIdx];
+    var sideFace = mountainAt(norm(sideSitIdx*15 + 180)).name;
+
+    var jian;
+    if (off <= 1.5 + 1e-9){
+      jian = { type:'正向', fen:0, label:'正向', off:off };
+    } else if (off <= 4.5 + 1e-9){
+      var n = Math.min(3, Math.max(1, Math.round(off/1.5)));
+      jian = { type:'兼', fen:n, off:off,
+               label:'兼' + sideSit + sideFace + NUM_CN[n-1] + '分' };
+    } else {
+      jian = { type:'兼重', fen:null, off:off,
+               label:'兼' + sideSit + sideFace + '过重（偏' + off.toFixed(1) + '°）' };
+    }
+
+    var fj = fenjinAt(sitDeg, mode);
+    var kw = kongwangAt(sitDeg, width);
+    var usable = (fj.attr === '旺' || fj.attr === '相');
+
+    var advice;
+    if (kw) advice = '大凶方位，避用';
+    else if (!usable) advice = '不可用（犯' + fj.attr + '），建议换分金';
+    else if (jian.type === '兼重') advice = '分金可用，兼向偏重需谨慎';
+    else if (jian.fen === 3) advice = '可用，兼向偏重需谨慎';
+    else advice = '可用';
+
+    var conclusion = '坐' + sit.name + '山' + face.name + '向 · ' + jian.label +
+                     ' · 分金' + fj.ganZhi + '（' + fj.attr + '）—— ' + advice +
+                     (kw ? ' ⚠️' + kw.label : '');
+
+    return {
+      sittingDeg:sitDeg, facingDeg:facingDeg,
+      sittingMountain:sit, facingMountain:face,
+      offset:off, sideSit:sideSit, sideFace:sideFace, jian:jian,
+      fenjin:fj, kongwang:kw, usable:usable, advice:advice,
+      suggestion: usable ? [] : suggestFenjin(sit.index),
+      conclusion:conclusion
+    };
+  }
+
+  /* ---------------- GEOMAG（WMM2025） ---------------- */
+  var GEOMAG = (function(){
+    var WGS84_A = 6378137.0, WGS84_F = 1/298.257223563, WGS84_E2 = WGS84_F*(2-WGS84_F);
+    var MAG_A = 6371200.0, NMAX = 12;
+
+    function declination(latDeg, lonDeg, decYear, altKm){
+      altKm = altKm || 0;
+      var phi = latDeg*D2R, lam = lonDeg*D2R, h = altKm*1000;
+      var sinp = Math.sin(phi), cosp = Math.cos(phi);
+      var q = Math.sqrt(1 - WGS84_E2*sinp*sinp);
+      var xe = (WGS84_A/q + h)*cosp, ze = (WGS84_A*(1-WGS84_E2)/q + h)*sinp;
+      var r = Math.sqrt(xe*xe + ze*ze);
+      var phig = Math.atan2(ze, xe);
+      var sp = Math.sin(phig), cp = Math.cos(phig);
+
+      /* Schmidt 半归一化勒让德函数及对纬度导数（x = sin φ'） */
+      var P = [], dP = [];
+      P[0] = [1]; dP[0] = [0];
+      P[1] = [sp, cp]; dP[1] = [cp, -sp];
+      for (var n=2;n<=NMAX;n++){
+        P[n] = []; dP[n] = [];
+        for (var m=0;m<=n;m++){
+          if (m === n){
+            var k1 = Math.sqrt((2*n-1)/(2*n));
+            P[n][n]  = k1*cp*P[n-1][n-1];
+            dP[n][n] = k1*(cp*dP[n-1][n-1] - sp*P[n-1][n-1]);
+          } else {
+            var kn = Math.sqrt(n*n - m*m);
+            var use2 = (m <= n-2);
+            var kp = use2 ? Math.sqrt((n-1)*(n-1) - m*m) : 0;
+            P[n][m]  = ((2*n-1)*sp*P[n-1][m] - (use2 ? kp*P[n-2][m] : 0))/kn;
+            dP[n][m] = ((2*n-1)*(cp*P[n-1][m] + sp*dP[n-1][m]) -
+                        (use2 ? kp*dP[n-2][m] : 0))/kn;
+          }
+        }
+      }
+
+      var dt = decYear - WMM2025.epoch;
+      var X=0, Y=0, Z=0;
+      for (var ci=0; ci<WMM2025.c.length; ci++){
+        var row = WMM2025.c[ci];
+        var n2 = row[0], m2 = row[1];
+        var g = row[2] + row[4]*dt, hh = row[3] + row[5]*dt;
+        var ratio = Math.pow(MAG_A/r, n2+2);
+        var cosml = Math.cos(m2*lam), sinml = Math.sin(m2*lam);
+        var tau = g*cosml + hh*sinml;
+        X += -ratio * tau * dP[n2][m2];
+        Z += -ratio * (n2+1) * tau * P[n2][m2];
+        if (m2 > 0) Y += ratio * m2 * (g*sinml - hh*cosml) * P[n2][m2];
+      }
+      Y = (Math.abs(cp) < 1e-10) ? 0 : Y / cp;
+      /* 球面坐标(以地心纬度φ')旋转回大地坐标：ψ = φ' − φ */
+      var psi = phig - phi;
+      var Xg = X*Math.cos(psi) - Z*Math.sin(psi);
+      var Yg = Y;
+      return Math.atan2(Yg, Xg) * R2D;   /* 东偏为正 */
+    }
+
+    function decimalYear(date){
+      var y = date.getFullYear();
+      var start = Date.UTC(y,0,1), end = Date.UTC(y+1,0,1);
+      return y + (Date.UTC(y, date.getMonth(), date.getDate()) - start)/(end - start);
+    }
+
+    return { declination:declination, decimalYear:decimalYear,
+             model:'WMM2025', epoch:WMM2025.epoch };
+  })();
+
+  /* ---------------- GEO ---------------- */
+  var GEO = (function(){
+    var PI = Math.PI, GCJ_A = 6378245.0, GCJ_EE = 0.00669342162296594323;
+
+    function outOfChina(lat, lng){
+      return !(lng > 72.004 && lng < 137.8347 && lat > 0.8293 && lat < 55.8271);
+    }
+    function tLat(x, y){
+      var r = -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
+      r += (20*Math.sin(6*x*PI) + 20*Math.sin(2*x*PI)) * 2/3;
+      r += (20*Math.sin(y*PI) + 40*Math.sin(y/3*PI)) * 2/3;
+      r += (160*Math.sin(y/12*PI) + 320*Math.sin(y*PI/30)) * 2/3;
+      return r;
+    }
+    function tLng(x, y){
+      var r = 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
+      r += (20*Math.sin(6*x*PI) + 20*Math.sin(2*x*PI)) * 2/3;
+      r += (20*Math.sin(x*PI) + 40*Math.sin(x/3*PI)) * 2/3;
+      r += (150*Math.sin(x/12*PI) + 300*Math.sin(x/30*PI)) * 2/3;
+      return r;
+    }
+    function wgs84ToGcj02(lat, lng){
+      if (outOfChina(lat, lng)) return [lat, lng];
+      var dLat = tLat(lng-105, lat-35), dLng = tLng(lng-105, lat-35);
+      var radLat = lat/180*PI, magic = Math.sin(radLat);
+      magic = 1 - GCJ_EE*magic*magic;
+      var sq = Math.sqrt(magic);
+      dLat = (dLat*180) / ((GCJ_A*(1-GCJ_EE))/(magic*sq)*PI);
+      dLng = (dLng*180) / (GCJ_A/sq*Math.cos(radLat)*PI);
+      return [lat+dLat, lng+dLng];
+    }
+    function gcj02ToWgs84(lat, lng){
+      if (outOfChina(lat, lng)) return [lat, lng];
+      var wl = lat, wg = lng;
+      for (var i=0;i<3;i++){
+        var g = wgs84ToGcj02(wl, wg);
+        wl += lat - g[0]; wg += lng - g[1];
+      }
+      return [wl, wg];
+    }
+    function bearing(lat1, lng1, lat2, lng2){
+      var p1 = lat1*D2R, p2 = lat2*D2R, dl = (lng2-lng1)*D2R;
+      var y = Math.sin(dl)*Math.cos(p2);
+      var x = Math.cos(p1)*Math.sin(p2) - Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+      return norm(Math.atan2(y, x)*R2D);
+    }
+    function distance(lat1, lng1, lat2, lng2){
+      var R = 6371008.8;
+      var dp = (lat2-lat1)*D2R, dl = (lng2-lng1)*D2R;
+      var a = Math.sin(dp/2)*Math.sin(dp/2) +
+              Math.cos(lat1*D2R)*Math.cos(lat2*D2R)*Math.sin(dl/2)*Math.sin(dl/2);
+      return 2*R*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    function midpoint(lat1, lng1, lat2, lng2){
+      var p1=lat1*D2R, l1=lng1*D2R, p2=lat2*D2R, l2=lng2*D2R;
+      var Bx = Math.cos(p2)*Math.cos(l2-l1), By = Math.cos(p2)*Math.sin(l2-l1);
+      var pm = Math.atan2(Math.sin(p1)+Math.sin(p2),
+                Math.sqrt((Math.cos(p1)+Bx)*(Math.cos(p1)+Bx)+By*By));
+      var lm = l1 + Math.atan2(By, Math.cos(p1)+Bx);
+      var lmDeg = norm(lm*R2D);
+      if (lmDeg > 180) lmDeg -= 360;
+      return [pm*R2D, lmDeg];
+    }
+    return { outOfChina:outOfChina, wgs84ToGcj02:wgs84ToGcj02, gcj02ToWgs84:gcj02ToWgs84,
+             bearing:bearing, distance:distance, midpoint:midpoint };
+  })();
+
+  /* ---------------- STORE ---------------- */
+  var STORE = (function(){
+    var SCHEMA_VERSION = 1;
+    var DEFAULTS = { fenjinMode:'120', kongwangWidth:1.5, coordFormat:'deg',
+                     trueNorthMode:false, dialStyle:'modern',
+                     showLong72:false, showLong60:false };
+    var MODES = ['120','240'], WIDTHS = [0.5,1,1.5], FORMATS = ['deg','dms'],
+        STYLES = ['modern','classic'];
+
+    function mergeSettings(raw){
+      var s = { schemaVersion: SCHEMA_VERSION, _updated: Date.now() };
+      for (var k in DEFAULTS) s[k] = DEFAULTS[k];
+      if (raw && typeof raw === 'object'){
+        if (MODES.indexOf(raw.fenjinMode) >= 0) s.fenjinMode = raw.fenjinMode;
+        if (WIDTHS.indexOf(raw.kongwangWidth) >= 0) s.kongwangWidth = raw.kongwangWidth;
+        if (FORMATS.indexOf(raw.coordFormat) >= 0) s.coordFormat = raw.coordFormat;
+        if (typeof raw.trueNorthMode === 'boolean') s.trueNorthMode = raw.trueNorthMode;
+        if (STYLES.indexOf(raw.dialStyle) >= 0) s.dialStyle = raw.dialStyle;
+        if (typeof raw.showLong72 === 'boolean') s.showLong72 = raw.showLong72;
+        if (typeof raw.showLong60 === 'boolean') s.showLong60 = raw.showLong60;
+      }
+      return s;
+    }
+    function pushRecord(list, rec, cap){
+      cap = cap || 50;
+      list = (list || []).slice();
+      list.push(rec);
+      if (list.length > cap) list = list.slice(list.length - cap);
+      return list;
+    }
+    function safeParse(json, fallback){
+      try { var v = JSON.parse(json); return (v === null || v === undefined) ? fallback : v; }
+      catch(e){ return fallback; }
+    }
+    return { DEFAULTS:DEFAULTS, mergeSettings:mergeSettings,
+             pushRecord:pushRecord, safeParse:safeParse };
+  })();
+
+  /* ---------------- 其他纯工具 ---------------- */
+  function mapSensorToDial(heading){ return norm(-heading); }
+
+  function formatDMS(deg, isLat){
+    var hemi = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
+    var a = Math.abs(deg), d = Math.floor(a), m = Math.floor((a-d)*60),
+        s = ((a-d)*60-m)*60;
+    return d + '°' + String(m).padStart(2,'0') + '′' +
+           s.toFixed(1).padStart(4,'0') + '″' + hemi;
+  }
+
+  /* ---------------- 龙脉层（穿山七十二龙 / 透地六十龙）----------------
+     共同钥匙：六十甲子中天干戊己的12个组合因戊己居中央、不入
+     二十四山方位，在罗盘各层皆为空亡 → 有效龙恒为 48。
+     穿山七十二龙：72格 = 48实龙(非戊己) + 24正中空格，每山3格，甲子起壬山左格顺布。
+     透地六十龙：60格 = 六十甲子完整布列，每龙6°，甲子起337.5°；戊己12龙标空亡。
+     吉凶：纳音五行 vs 山家正五行论生克 → 旺/相(吉)·泄/囚/死(凶)·空亡(大凶)。 */
+  var GAN = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  var ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  var JIAZI = (function(){ var a=[]; for(var i=0;i<60;i++) a.push(GAN[i%10]+ZHI[i%12]); return a; })();
+  var NAYIN = [                              /* 三十纳音，每两甲子一组 [名,五行] */
+    ['海中金','金'],['炉中火','火'],['大林木','木'],['路旁土','土'],['剑锋金','金'],
+    ['山头火','火'],['涧下水','水'],['城头土','土'],['白蜡金','金'],['杨柳木','木'],
+    ['泉中水','水'],['屋上土','土'],['霹雳火','火'],['松柏木','木'],['长流水','水'],
+    ['砂中金','金'],['山下火','火'],['平地木','木'],['壁上土','土'],['金箔金','金'],
+    ['覆灯火','火'],['天河水','水'],['大驿土','土'],['钗钏金','金'],['桑柘木','木'],
+    ['大溪水','水'],['沙中土','土'],['天上火','火'],['石榴木','木'],['大海水','水']
+  ];
+  function nayinOf(jiaziIdx){ var p = NAYIN[Math.floor(jiaziIdx/2)]; return {name:p[0], element:p[1]}; }
+  /* 二十四山正五行（山家五行） */
+  var MOUNTAIN_ELEMENT = {
+    '子':'水','癸':'水','丑':'土','艮':'土','寅':'木','甲':'木','卯':'木','乙':'木',
+    '辰':'土','巽':'木','巳':'火','丙':'火','午':'火','丁':'火','未':'土','坤':'土',
+    '申':'金','庚':'金','酉':'金','辛':'金','戌':'土','乾':'金','亥':'水','壬':'水'
+  };
+  var GEN = {'金':'水','水':'木','木':'火','火':'土','土':'金'};   /* 龙生山者(我生) */
+  var KE  = {'金':'木','木':'土','土':'水','水':'火','火':'金'};   /* 龙克山者(我克) */
+  function dragonFortune(mountainName, dragonElement){
+    var me = MOUNTAIN_ELEMENT[mountainName];
+    if (!me || !dragonElement) return '—';
+    if (me === dragonElement) return '旺';        /* 比和 */
+    if (GEN[dragonElement] === me) return '相';    /* 龙生山 */
+    if (GEN[me] === dragonElement) return '泄';    /* 山生龙 */
+    if (KE[dragonElement] === me) return '囚';     /* 龙克山 */
+    if (KE[me] === dragonElement) return '死';     /* 山克龙 */
+    return '—';
+  }
+  /* 穿山七十二龙表：LONG72_VAL[k]=六十甲子index(-1=正中空格)；LONG72_MTN[k]=所属山index */
+  var LONG72_VAL = new Array(72), LONG72_MTN = new Array(72);
+  (function(){
+    var real = [];                                /* 六十甲子剔除戊己后的48龙序号 */
+    for (var i=0;i<60;i++){ var ch = JIAZI[i].charAt(0); if (ch==='戊'||ch==='己') continue; real.push(i); }
+    var ri = 0;
+    for (var k=0;k<72;k++){
+      var cellIdx = ((23*3) + k) % 72;            /* 山数组格位，从壬山左格(=69)起顺时针 */
+      var mi = Math.floor(cellIdx/3);
+      LONG72_MTN[k] = mi;
+      if (cellIdx % 3 === 1) LONG72_VAL[k] = -1;  /* 每山正中格 = 正空亡 */
+      else LONG72_VAL[k] = real[ri++];            /* 左右格填实龙 */
+    }
+  })();
+  /* 穿山七十二龙：给定坐度(deg)→格信息。每格5°，甲子起337.5°(壬山左格=亥壬界) */
+  function long72At(deg){
+    var k = Math.floor(norm(deg - 337.5)/5);      /* 0..71 */
+    var v = LONG72_VAL[k], mname = MOUNTAINS[LONG72_MTN[k]];
+    if (v === -1) return { index:k, empty:true, label:'正空亡', mountain:mname };
+    var ny = nayinOf(v);
+    return { index:k, empty:false, jiaziIdx:v, ganZhi:JIAZI[v],
+             nayin:ny.name, element:ny.element, mountain:mname,
+             fortune:dragonFortune(mname, ny.element) };
+  }
+  /* 透地六十龙：给定坐度(deg)→龙信息。每龙6°，甲子起337.5°；戊己12龙=空亡 */
+  function long60At(deg){
+    var k = Math.floor(norm(deg - 337.5)/6);     /* 0..59 */
+    var jz = JIAZI[k], ch = jz.charAt(0);
+    var ny = nayinOf(k), mname = MOUNTAINS[Math.floor(norm(deg + 7.5)/15)];
+    return { index:k, jiaziIdx:k, ganZhi:jz, nayin:ny.name, element:ny.element,
+             empty:(ch==='戊'||ch==='己'), mountain:mname,
+             fortune:dragonFortune(mname, ny.element) };
+  }
+
+  /* ---------------- 手工排盘：已移除（V1.4） ---------------- */
+
+  return {
+    MOUNTAINS:MOUNTAINS, BRANCHES:BRANCHES, FJ120:FJ120,
+    STEM_ATTR:STEM_ATTR, NUM_CN:NUM_CN,
+    JIAZI:JIAZI, NAYIN:NAYIN, MOUNTAIN_ELEMENT:MOUNTAIN_ELEMENT,
+    LONG72_VAL:LONG72_VAL, LONG72_MTN:LONG72_MTN,
+    norm:norm, circDist:circDist, branchOfMountain:branchOfMountain,
+    mountainAt:mountainAt, fenjinAt:fenjinAt, kongwangAt:kongwangAt,
+    analyze:analyze, suggestFenjin:suggestFenjin,
+    nayinOf:nayinOf, dragonFortune:dragonFortune,
+    long72At:long72At, long60At:long60At,
+    GEOMAG:GEOMAG, GEO:GEO, STORE:STORE,
+    mapSensorToDial:mapSensorToDial, formatDMS:formatDMS
+  };
+})();
+/*ENGINE-END*/
+</script>
+<script>
+
+/* =====================================================================
+ * UI 层（可使用 DOM）
+ * ===================================================================== */
+(function(){
+'use strict';
+var E = LP;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- 全局状态 ---------- */
+var state;
+try {
+  state = {
+    settings: E.STORE.mergeSettings(E.STORE.safeParse(localStorage.getItem('lp_settings'), {})),
+    posWgs: null,
+    decl: null, declKnown: false,
+    heading: 0, headingSm: 0, hasHeading: false, sensorMode: 'none',
+    relOffsetAlpha: null,
+    lastCardDeg: null
+  };
+} catch (e) {
+  /* P0-5：Safari 隐私模式 / localStorage 不可用 兜底：用默认设置启动，本次不持久化 */
+  console.warn('localStorage 不可用，使用默认设置', e);
+  state = {
+    settings: E.STORE.mergeSettings({}),
+    posWgs: null, decl: null, declKnown: false,
+    heading: 0, headingSm: 0, hasHeading: false, sensorMode: 'none',
+    relOffsetAlpha: null, lastCardDeg: null,
+    _noStorage: true
+  };
+}
+try {
+  var cache = E.STORE.safeParse(localStorage.getItem('lp_decl_cache'), null);
+  /* 恢复缓存磁偏角：仅 24h 内有效，避免隔天/跨场景沿用陈旧值 */
+  if (cache && typeof cache.decl === 'number' && typeof cache.ts === 'number'){
+    if (Date.now() - cache.ts < 24*3600*1000){ state.decl = cache.decl; state.declKnown = true; }
+  }
+} catch(e){}
+
+function saveSettings(){ if (state._noStorage) return; try { localStorage.setItem('lp_settings', JSON.stringify(state.settings)); } catch(e){ state._noStorage = true; toast('存储不可用，本次配置不保存'); } }
+function toast(msg, ms){
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(function(){ t.classList.remove('show'); }, ms || 2600);
+}
+
+/* ---------- 顶部状态条 ---------- */
+function fmtCoord(lat, lng){
+  return state.settings.coordFormat === 'dms'
+    ? E.formatDMS(lat, true) + ' ' + E.formatDMS(lng, false)
+    : lat.toFixed(5) + ', ' + lng.toFixed(5);
+}
+function updateChips(){
+  var c = $('chipCoord'), d = $('chipDecl');
+  if (state.posWgs) c.textContent = '📍 坐标：' + fmtCoord(state.posWgs.lat, state.posWgs.lng);
+  else c.textContent = '📍 坐标：未定位（地图模式可选点）';
+  if (state.declKnown){
+    var v = state.decl;
+    d.textContent = '🧭 磁偏角：' + (v >= 0 ? '+' : '') + v.toFixed(1) + '°（' +
+                    (v >= 0 ? '东偏' : '西偏') + ' · ' + E.GEOMAG.model + '）';
+    d.className = 'chip';
+  } else {
+    d.textContent = '🧭 磁偏角：未定位（按 0° 参与判读）';
+    d.className = 'chip warn';
+  }
+}
+function computeDecl(lat, lng){
+  try {
+    var dy = E.GEOMAG.decimalYear(new Date());
+    var d = E.GEOMAG.declination(lat, lng, dy, 0);
+    if (isFinite(d)){
+      state.decl = d; state.declKnown = true;
+      try { localStorage.setItem('lp_decl_cache',
+        JSON.stringify({lat:lat,lng:lng,decl:d,ts:Date.now()})); } catch(e){}
+    }
+    updateChips();
+  } catch(e){}
+}
+function locate(){
+  if (!navigator.geolocation){ toast('当前浏览器不支持定位'); return; }
+  navigator.geolocation.getCurrentPosition(function(p){
+    state.posWgs = { lat:p.coords.latitude, lng:p.coords.longitude };
+    computeDecl(state.posWgs.lat, state.posWgs.lng);
+    toast('定位成功');
+    if (activeTab === 'map' && p.coords){
+      var g = E.GEO.wgs84ToGcj02(state.posWgs.lat, state.posWgs.lng);
+      mapView.flyTo(g[0], g[1]);
+    }
+  }, function(err){
+    toast('定位失败：' + (err.message || '被拒绝') + '，可手动选点');
+  }, { enableHighAccuracy:true, timeout:8000, maximumAge:60000 });
+}
+
+/* =====================================================================
+ * 罗盘盘面
+ * ===================================================================== */
+var DIAL = 900, DC = 450, dialCanvas = null;
+/* P2-8：buildDial 离屏缓存（dialStyle + showLong72 + showLong60 三维 key）。命中缓存直接贴图，避免每次 settings 切换都重画 ~150 环 */
+var _dialCache = {};   /* key -> canvas */
+var _dialCacheKey = null;
+
+function buildDial(){
+  /* P2-8：缓存命中检查 —— dialStyle + 龙脉层可见性 + 真北模式 三维 key。命中直接画到 dialCanvas，省去 150 环全量重算 */
+  var _key = state.settings.dialStyle + '|' + (state.settings.showLong72?'1':'0') + '|' + (state.settings.showLong60?'1':'0');
+  if (_dialCacheKey === _key && _dialCache[_key]){
+    dialCanvas = _dialCache[_key];
+    return;
+  }
+  dialCanvas = document.createElement('canvas');
+  dialCanvas.width = DIAL; dialCanvas.height = DIAL;
+  var g = dialCanvas.getContext('2d');
+  var classic = state.settings.dialStyle === 'classic';
+  var c = DC, R = 444;
+  var BASE = classic ? '#F3E5C8' : '#FDF6EC';
+  var RIM = classic ? '#8A5A2B' : '#D96A1F';
+  var RED = '#C2402A';
+  var FONT = '"PingFang SC","Microsoft YaHei",sans-serif';
+
+  g.clearRect(0, 0, DIAL, DIAL);
+  g.fillStyle = BASE;
+  g.beginPath(); g.arc(c, c, R, 0, Math.PI*2); g.fill();
+  g.lineWidth = 6; g.strokeStyle = RIM;
+  g.beginPath(); g.arc(c, c, R-3, 0, Math.PI*2); g.stroke();
+
+  /* 山界细线 + 卦界红线 */
+  for (var k=0;k<24;k++){
+    var b = 7.5 + 15*k, rad = b*Math.PI/180;
+    var big = (b % 45) === 22.5;
+    g.beginPath();
+    g.moveTo(c + Math.sin(rad)*(R-6), c - Math.cos(rad)*(R-6));
+    g.lineTo(c + Math.sin(rad)*210, c - Math.cos(rad)*210);
+    if (big){ g.lineWidth = 3; g.strokeStyle = 'rgba(194,64,42,.85)'; }
+    else { g.lineWidth = 1; g.strokeStyle = 'rgba(61,50,41,.22)'; }
+    g.stroke();
+  }
+
+  /* 龙脉层环区 [210,278]（可选，设置开关控制） */
+  if (state.settings.showLong60){
+    var r60o = 244, r60i = 210;
+    for (var l6 = 0; l6 < 60; l6++){
+      var g6 = E.NAYIN[Math.floor(l6/2)][1];
+      var e6 = (E.JIAZI[l6].charAt(0) === '戊' || E.JIAZI[l6].charAt(0) === '己');
+      g.fillStyle = e6 ? 'rgba(120,110,100,.22)' :
+        (g6==='金' ? 'rgba(212,175,55,.16)' : g6==='木' ? 'rgba(86,140,47,.16)' :
+         g6==='水' ? 'rgba(52,109,179,.16)' : g6==='火' ? 'rgba(200,64,42,.16)' : 'rgba(139,90,43,.16)');
+      var a06 = (337.5 + l6*6) * Math.PI/180, a16 = (337.5 + (l6+1)*6) * Math.PI/180;
+      g.beginPath();
+      g.arc(c, c, r60o, a06-Math.PI/2, a16-Math.PI/2);
+      g.arc(c, c, r60i, a16-Math.PI/2, a06-Math.PI/2, true);
+      g.closePath(); g.fill();
+    }
+    for (var d6 = 0; d6 <= 60; d6++){
+      var ad6 = (337.5 + d6*6) * Math.PI/180;
+      g.beginPath();
+      g.moveTo(c + Math.sin(ad6)*r60i, c - Math.cos(ad6)*r60i);
+      g.lineTo(c + Math.sin(ad6)*r60o, c - Math.cos(ad6)*r60o);
+      g.lineWidth = 0.6; g.strokeStyle = 'rgba(61,50,41,.3)'; g.stroke();
+    }
+    g.font = '700 9px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (var t6 = 0; t6 < 60; t6++){
+      var mid6 = (337.5 + t6*6 + 3) * Math.PI/180;
+      var jz6 = E.JIAZI[t6], e6t = (jz6.charAt(0)==='戊' || jz6.charAt(0)==='己');
+      g.save(); g.translate(c, c); g.rotate(mid6); g.translate(0, -227);
+      g.fillStyle = e6t ? 'rgba(150,140,130,.5)' : (classic ? '#6B4419' : '#3a3128');
+      for (var ci6 = 0; ci6 < 2; ci6++){ g.save(); g.translate(0, ci6*9); g.rotate(Math.PI); g.fillText(jz6[ci6], 0, 0); g.restore(); }
+      g.restore();
+    }
+    g.lineWidth = 1; g.strokeStyle = 'rgba(61,50,41,.3)';
+    g.beginPath(); g.arc(c, c, r60o, 0, Math.PI*2); g.stroke();
+    g.beginPath(); g.arc(c, c, r60i, 0, Math.PI*2); g.stroke();
+  }
+  if (state.settings.showLong72){
+    var r72o = 278, r72i = 244;
+    for (var l7 = 0; l7 < 72; l7++){
+      var v7 = E.LONG72_VAL[l7];
+      if (v7 === -1) g.fillStyle = 'rgba(120,110,100,.22)';
+      else {
+        var g7 = E.NAYIN[Math.floor(v7/2)][1];
+        g.fillStyle = g7==='金' ? 'rgba(212,175,55,.16)' : g7==='木' ? 'rgba(86,140,47,.16)' :
+                      g7==='水' ? 'rgba(52,109,179,.16)' : g7==='火' ? 'rgba(200,64,42,.16)' : 'rgba(139,90,43,.16)';
+      }
+      var a07 = (337.5 + l7*5) * Math.PI/180, a17 = (337.5 + (l7+1)*5) * Math.PI/180;
+      g.beginPath();
+      g.arc(c, c, r72o, a07-Math.PI/2, a17-Math.PI/2);
+      g.arc(c, c, r72i, a17-Math.PI/2, a07-Math.PI/2, true);
+      g.closePath(); g.fill();
+    }
+    for (var d7 = 0; d7 <= 72; d7++){
+      var ad7 = (337.5 + d7*5) * Math.PI/180;
+      g.beginPath();
+      g.moveTo(c + Math.sin(ad7)*r72i, c - Math.cos(ad7)*r72i);
+      g.lineTo(c + Math.sin(ad7)*r72o, c - Math.cos(ad7)*r72o);
+      g.lineWidth = 0.5; g.strokeStyle = 'rgba(61,50,41,.28)'; g.stroke();
+    }
+    for (var sb = 0; sb < 24; sb++){            /* 山界粗线（每3格=15°） */
+      var asb = (337.5 + sb*15) * Math.PI/180;
+      g.beginPath();
+      g.moveTo(c + Math.sin(asb)*r72i, c - Math.cos(asb)*r72i);
+      g.lineTo(c + Math.sin(asb)*r72o, c - Math.cos(asb)*r72o);
+      g.lineWidth = 1.2; g.strokeStyle = 'rgba(61,50,41,.42)'; g.stroke();
+    }
+    g.font = '700 8px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (var t7 = 0; t7 < 72; t7++){
+      var v7t = E.LONG72_VAL[t7];
+      if (v7t === -1) continue;
+      var jz7 = E.JIAZI[v7t], mid7 = (337.5 + t7*5 + 2.5) * Math.PI/180;
+      g.save(); g.translate(c, c); g.rotate(mid7); g.translate(0, -261);
+      g.fillStyle = classic ? '#6B4419' : '#3a3128';
+      for (var ci7 = 0; ci7 < 2; ci7++){ g.save(); g.translate(0, ci7*8); g.rotate(Math.PI); g.fillText(jz7[ci7], 0, 0); g.restore(); }
+      g.restore();
+    }
+    g.lineWidth = 1; g.strokeStyle = 'rgba(61,50,41,.3)';
+    g.beginPath(); g.arc(c, c, r72o, 0, Math.PI*2); g.stroke();
+    g.beginPath(); g.arc(c, c, r72i, 0, Math.PI*2); g.stroke();
+  }
+
+  /* 分金环 [278,330]：底色 + 分隔 + 旺相干支 */
+  var rFjOut = 330, rFjIn = 278;
+  g.save();
+  g.beginPath(); g.arc(c, c, rFjOut, 0, Math.PI*2); g.clip();
+  for (var i=0;i<24;i++){
+    for (var j=0;j<5;j++){
+      var cell = E.FJ120[i*5+j];
+      var a0 = cell.startRaw*Math.PI/180, a1 = cell.endRaw*Math.PI/180;
+      if (cell.attr === '旺' || cell.attr === '相')
+        g.fillStyle = classic ? 'rgba(196,138,50,.22)' : 'rgba(239,125,45,.16)';
+      else if (cell.attr === '空亡') g.fillStyle = 'rgba(120,110,100,.12)';
+      else g.fillStyle = 'rgba(120,110,100,.05)';
+      g.beginPath(); g.moveTo(c, c);
+      g.arc(c, c, rFjOut, a0-Math.PI/2, a1-Math.PI/2);
+      g.closePath(); g.fill();
+    }
+  }
+  g.restore();
+  for (var i2=0;i2<24;i2++){
+    for (var j2=0;j2<=5;j2++){
+      var dd = i2*15 - 7.5 + j2*3, rd = dd*Math.PI/180;
+      g.beginPath();
+      g.moveTo(c + Math.sin(rd)*rFjIn, c - Math.cos(rd)*rFjIn);
+      g.lineTo(c + Math.sin(rd)*rFjOut, c - Math.cos(rd)*rFjOut);
+      g.lineWidth = 0.7; g.strokeStyle = 'rgba(61,50,41,.25)'; g.stroke();
+    }
+  }
+  g.lineWidth = 1; g.strokeStyle = 'rgba(61,50,41,.3)';
+  g.beginPath(); g.arc(c, c, rFjOut, 0, Math.PI*2); g.stroke();
+  g.beginPath(); g.arc(c, c, rFjIn, 0, Math.PI*2); g.stroke();
+  for (var i3=0;i3<24;i3++){
+    for (var j3=0;j3<5;j3++){
+      var cel = E.FJ120[i3*5+j3];
+      if (cel.attr !== '旺' && cel.attr !== '相') continue;
+      var mid = (cel.startRaw + 1.5)*Math.PI/180;
+      g.save();
+      g.translate(c, c); g.rotate(mid);
+      g.fillStyle = cel.attr === '旺' ? '#B4531F' : '#8A6A3A';
+      g.font = '700 17px ' + FONT;
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (var ci=0; ci<cel.ganZhi.length; ci++){
+        g.save(); g.translate(0, -(316 - ci*20)); g.rotate(Math.PI);
+        g.fillText(cel.ganZhi[ci], 0, 0);
+        g.restore();
+      }
+      g.restore();
+    }
+  }
+
+  /* 二十四山环 [330,404] */
+  for (var m=0;m<24;m++){
+    var name = E.MOUNTAINS[m], midA = m*15*Math.PI/180;
+    var isZheng = (name === '子' || name === '午' || name === '卯' || name === '酉');
+    g.save();
+    g.translate(c, c); g.rotate(midA); g.translate(0, -367); g.rotate(Math.PI);
+    g.fillStyle = isZheng ? RED : (classic ? '#6B4419' : '#4A3B2E');
+    g.font = (isZheng ? '800 34px ' : '700 30px ') + FONT;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(name, 0, 0);
+    g.restore();
+  }
+  g.lineWidth = 1; g.strokeStyle = 'rgba(61,50,41,.3)';
+  g.beginPath(); g.arc(c, c, 330, 0, Math.PI*2); g.stroke();
+  g.beginPath(); g.arc(c, c, 404, 0, Math.PI*2); g.stroke();
+
+  /* 度数环 [404,444] */
+  g.fillStyle = classic ? '#EFE0C0' : '#FBF0E2';
+  g.beginPath(); g.arc(c, c, R-6, 0, Math.PI*2); g.arc(c, c, 404, 0, Math.PI*2, true); g.fill();
+  for (var t=0;t<360;t+=2){
+    var rt = t*Math.PI/180, len = (t % 10 === 0) ? 14 : 7;
+    g.beginPath();
+    g.moveTo(c + Math.sin(rt)*(R-8), c - Math.cos(rt)*(R-8));
+    g.lineTo(c + Math.sin(rt)*(R-8-len), c - Math.cos(rt)*(R-8-len));
+    g.lineWidth = (t % 30 === 0) ? 2.2 : 1;
+    g.strokeStyle = (t % 30 === 0) ? '#8A5A2B' : 'rgba(61,50,41,.45)';
+    g.stroke();
+  }
+  g.fillStyle = '#7A5B33';
+  g.font = '700 20px ' + FONT;
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (var t2=0;t2<360;t2+=30){
+    g.save();
+    g.translate(c, c); g.rotate(t2*Math.PI/180); g.translate(0, -(R-33));
+    g.fillText(String(t2), 0, 0);
+    g.restore();
+  }
+
+  /* 八卦环 */
+  var guaByAngle = {0:'坎',45:'艮',90:'震',135:'巽',180:'离',225:'坤',270:'兑',315:'乾'};
+  for (var ga in guaByAngle){
+    var ang = parseInt(ga, 10)*Math.PI/180;
+    g.save();
+    g.translate(c, c); g.rotate(ang); g.translate(0, -182);
+    g.fillStyle = '#C05A20';
+    g.font = '700 22px ' + FONT;
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(guaByAngle[ga], 0, 0);
+    g.restore();
+  }
+  g.lineWidth = 1; g.strokeStyle = 'rgba(194,64,42,.35)';
+  g.beginPath(); g.arc(c, c, 198, 0, Math.PI*2); g.stroke();
+
+  /* 内圈 + 天池 */
+  g.lineWidth = 2; g.strokeStyle = RIM;
+  g.beginPath(); g.arc(c, c, 210, 0, Math.PI*2); g.stroke();
+  g.fillStyle = classic ? '#F7EBD2' : '#FFFDF8';
+  g.beginPath(); g.arc(c, c, 54, 0, Math.PI*2); g.fill();
+  g.lineWidth = 2.5; g.strokeStyle = RED;
+  g.beginPath(); g.arc(c, c, 54, 0, Math.PI*2); g.stroke();
+  /* P2-8：保存到离屏缓存 */
+  _dialCache[_key] = dialCanvas;
+  _dialCacheKey = _key;
+}
+
+var cv = null, ctx = null, dpr = 1;
+function resizeCanvas(){
+  if (!cv) return;
+  var w = cv.parentElement.clientWidth || 320;
+  dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  cv.width = Math.round(w*dpr); cv.height = Math.round(w*dpr);
+  cv.style.height = w + 'px';
+}
+function drawCompass(){
+  if (!ctx || !dialCanvas) return;
+  var W = cv.width, c2 = W/2, scale = W/DIAL;
+  ctx.clearRect(0, 0, W, W);
+  var h = state.headingSm;
+  var rot = E.mapSensorToDial(h)*Math.PI/180;
+  ctx.save();
+  ctx.translate(c2, c2); ctx.rotate(rot);
+  ctx.drawImage(dialCanvas, -c2, -c2, W, W);
+  /* 坐方分金格高亮（红框） */
+  var rdg = state.lastCardDeg;
+  if (rdg != null){
+    var sit = E.norm(rdg + 180);
+    var cell = E.fenjinAt(sit, state.settings.fenjinMode);
+    var a0 = (cell.start - 0.2)*Math.PI/180, a1 = (cell.end + 0.2)*Math.PI/180;
+    ctx.save();
+    ctx.scale(scale, scale);
+    ctx.beginPath();
+    ctx.moveTo(Math.sin(a0)*278, -Math.cos(a0)*278);
+    ctx.arc(0, 0, 278, a0-Math.PI/2, a1-Math.PI/2);
+    ctx.lineTo(Math.sin(a1)*330, -Math.cos(a1)*330);
+    ctx.arc(0, 0, 330, a1-Math.PI/2, a0-Math.PI/2, true);
+    ctx.closePath();
+    ctx.lineWidth = 3.5; ctx.strokeStyle = '#C2402A'; ctx.stroke();
+    ctx.restore();
+  }
+  /* 磁针（随盘转动，指向盘面子位） */
+  ctx.save(); ctx.scale(scale, scale);
+  ctx.beginPath();
+  ctx.moveTo(0, 44); ctx.lineTo(6, 0); ctx.lineTo(0, -46); ctx.lineTo(-6, 0); ctx.closePath();
+  ctx.fillStyle = '#D0342C'; ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(0, 44); ctx.lineTo(6, 0); ctx.lineTo(0, 8); ctx.lineTo(-6, 0); ctx.closePath();
+  ctx.fillStyle = '#9A8F84'; ctx.fill();
+  ctx.restore();
+  ctx.restore();
+  /* 中心点 */
+  ctx.beginPath(); ctx.arc(c2, c2, 3.5, 0, Math.PI*2); ctx.fillStyle = '#C2402A'; ctx.fill();
+  /* 固定十字天心 */
+  ctx.strokeStyle = '#EF7D2D'; ctx.lineWidth = Math.max(2, 3*scale);
+  ctx.beginPath(); ctx.moveTo(c2, 6); ctx.lineTo(c2, c2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(c2-14, 6); ctx.lineTo(c2, 20); ctx.lineTo(c2+14, 6);
+  ctx.closePath(); ctx.fillStyle = '#EF7D2D'; ctx.fill();
+}
+
+function animLoop(){
+  var target = state.heading, cur = state.headingSm;
+  var delta = ((target - cur + 540) % 360) - 180;
+  state.headingSm = E.norm(cur + delta*0.22);
+  drawCompass();
+  updateBadge();
+  maybeUpdateLiveCard();
+  requestAnimationFrame(animLoop);
+}
+function updateBadge(){
+  var d = effFacing();
+  var m = E.mountainAt(d);
+  $('dialBadge').textContent = d.toFixed(1) + '° · ' + m.name + '（向）';
+}
+function effFacing(){
+  var d = state.heading;
+  if (state.settings.trueNorthMode && state.declKnown) return E.norm(d + state.decl);
+  return E.norm(d);
+}
+
+/* ---------- 实地判读卡 ---------- */
+function maybeUpdateLiveCard(){
+  var facing = effFacing();
+  if (state.lastCardDeg !== null &&
+      Math.abs(((facing - state.lastCardDeg + 540) % 360) - 180) < 0.2) return;
+  state.lastCardDeg = facing;
+  renderLiveCard(facing);
+}
+function renderLiveCard(facing){
+  /* P2-1：未授权传感器时 heading=0 → analyze(180) 给"午山子向"假判读。改为 hasHeading 守卫，未授权显示空态文案 */
+  if (!state.hasHeading){
+    $('liveCard').innerHTML = '<p style="color:var(--muted);font-size:14px;text-align:center;padding:18px 0">尚未获取方向传感器数据<br><small style="font-size:11px">请授予方向/运动传感器权限，或在「设置」开启手动校准</small></p>';
+    return;
+  }
+  var sitDeg = E.norm(facing + 180);
+  var r = E.analyze(sitDeg, state.settings);
+  /* P1-5：空亡升级为 severe（暗红边框+粗体），与"凶"视觉上严格区分——空亡属大凶，凶属普通不利 */
+  var tagCls = r.kongwang ? 'severe' : (r.usable ? 'ok' : 'bad');
+  var tagTxt = r.kongwang ? '⚠ 空亡 · ' + r.kongwang.type : (r.usable ? '吉 · ' + r.fenjin.attr : '凶 · ' + r.fenjin.attr);
+  var html = '';
+  html += '<div class="conc">坐' + r.sittingMountain.name + '山' + r.facingMountain.name + '向 · ' +
+          r.jian.label + '<span class="tag ' + tagCls + '">' + tagTxt + '</span></div>';
+  html += '<div class="chips">';
+  html += '<span class="hl">分金 ' + r.fenjin.ganZhi + '（' + r.fenjin.attr + '）</span>';
+  /* P2-5：双 chip 同时显示真北+磁北（declKnown 时），让用户对照两个参考系的口径 */
+  if (state.declKnown){
+    var M = E.norm(state.settings.trueNorthMode ? (r.facingDeg - state.decl) : r.facingDeg);
+    var T = E.norm(state.settings.trueNorthMode ? r.facingDeg : (r.facingDeg + state.decl));
+    html += '<span>磁北 ' + M.toFixed(1) + '°</span>';
+    html += '<span>真北 ' + T.toFixed(1) + '°</span>';
+  } else {
+    html += '<span>' + (state.settings.trueNorthMode ? '真北' : '磁北') + ' 向方 ' + r.facingDeg.toFixed(1) + '°</span>';
+  }
+  if (r.kongwang) html += '<span class="hl" style="background:#FBE7E2;color:#C2402A">' + r.kongwang.label + '</span>';
+  if (r.suggestion.length) html += '<span>建议：' + r.suggestion.join(' / ') + '</span>';
+  html += '</div>';
+  html += '<details class="params" open><summary>专业参数</summary><div class="kv">';
+  html += '<b>判读结论</b><span>' + r.conclusion + '</span>';
+  html += '<b>坐方度数</b><span>' + r.sittingDeg.toFixed(2) + '°</span>';
+  html += '<b>向方度数</b><span>' + r.facingDeg.toFixed(2) + '°</span>';
+  html += '<b>偏出中线</b><span>' + r.offset.toFixed(2) + '°（' +
+          (r.offset <= 1.5 ? '正向域' : (r.offset <= 4.5 ? '兼向域' : '过重')) + '）</span>';
+  html += '<b>分金格</b><span>' + r.fenjin.ganZhi + ' · ' + r.fenjin.start.toFixed(1) + '°–' +
+          r.fenjin.end.toFixed(1) + '° · ' + (state.settings.fenjinMode === '240' ? '1.5°格' : '3°格') + '</span>';
+  if (state.settings.showLong72){
+    var d72 = E.long72At(r.sittingDeg);
+    html += '<b>穿山龙</b><span>' + (d72.empty ? '正空亡（不可用）' :
+            d72.ganZhi + ' · ' + d72.nayin + '（' + d72.element + '）· ' + d72.fortune) + '</span>';
+  }
+  if (state.settings.showLong60){
+    var d60 = E.long60At(r.sittingDeg);
+    html += '<b>透地龙</b><span>' + (d60.empty ? '戊己空亡（不可用）' :
+            d60.ganZhi + ' · ' + d60.nayin + '（' + d60.element + '）· ' + d60.fortune) + '</span>';
+  }
+  if (state.declKnown){
+    html += '<b>磁偏角</b><span>' + (state.decl >= 0 ? '+' : '') + state.decl.toFixed(2) + '°（' +
+            (state.decl >= 0 ? '东偏' : '西偏') + '，' + E.GEOMAG.model + '）</span>';
+    html += '<b>真北换算</b><span>真北 = 磁北 ' + (state.decl >= 0 ? '+' : '') + state.decl.toFixed(2) + '°</span>';
+  } else {
+    html += '<b>磁偏角</b><span>未定位，按 0° 判读</span>';
+  }
+  html += '<b>判定依据</b><span>地盘正针 · 三合盘 · 丙庚旺/丁辛相/甲壬孤/乙癸虚/戊己空亡</span>';
+  html += '</div></details>';
+  /* P2-13：actions 按钮已移出 html 字符串为 part1.html 固定节点，onclick 由 IIFE 末尾统一注册 */
+  $('liveCard').innerHTML = html;
+}
+
+/* ---------- 传感器 ---------- */
+function setSensorStatus(mode){
+  state.sensorMode = mode;
+  var dot = $('sensorDot'), txt = $('sensorText');
+  if (mode === 'absolute'){ dot.className = 'dot ok'; txt.textContent = '方向传感器：系统罗盘（绝对方位）'; }
+  else if (mode === 'ios'){ dot.className = 'dot ok'; txt.textContent = '方向传感器：iOS 罗盘'; }
+  else if (mode === 'relative'){ dot.className = 'dot warn'; txt.textContent = '相对方位模式（已手动校零，仅供参考）'; }
+  else { dot.className = 'dot'; txt.textContent = '未检测到方向传感器，可用下方手动转盘'; }
+}
+var interfered = false;
+function showInterfereHint(){
+  if (interfered) return; interfered = true;
+  toast('⚠️ 附近可能有磁场干扰，请远离金属/电器或重新校准', 3600);
+  setTimeout(function(){ interfered = false; }, 30000);
+}
+function onSensorEvent(e){
+  /* P0-4：三分支统一加 isNaN 守卫，丢弃 NaN 数据不更新 heading/hasHeading，防止传感器瞬时 NaN 永久冻结罗盘 */
+  if (e.type === 'deviceorientationabsolute' && e.alpha != null && !isNaN(e.alpha) && e.absolute === true){
+    state.heading = E.norm(360 - e.alpha);
+    state.hasHeading = true; setSensorStatus('absolute');
+    $('compassCanvas').classList.remove('need-perm');
+    /* P2-12：进入 absolute 模式清除相对模式漂移定时器 */
+    if (state._relDriftTimer){ clearTimeout(state._relDriftTimer); state._relDriftTimer = null; }
+    return;
+  }
+  if (e.webkitCompassHeading != null && !isNaN(e.webkitCompassHeading)){
+    state.heading = E.norm(e.webkitCompassHeading);
+    state.hasHeading = true; setSensorStatus('ios');
+    if (e.webkitCompassAccuracy != null && e.webkitCompassAccuracy > 15) showInterfereHint();
+    $('compassCanvas').classList.remove('need-perm');
+    /* P2-12：进入 ios 模式清除相对模式漂移定时器 */
+    if (state._relDriftTimer){ clearTimeout(state._relDriftTimer); state._relDriftTimer = null; }
+    return;
+  }
+  if (e.alpha != null && !isNaN(e.alpha) && state.sensorMode !== 'absolute' && state.sensorMode !== 'ios'){
+    var off = state.relOffsetAlpha == null ? 0 : state.relOffsetAlpha;
+    state.heading = E.norm(off - e.alpha);
+    state.hasHeading = true; setSensorStatus('relative');
+    /* P2-12：相对模式漂移提醒——每 60s 提醒用户重新校准（磁场干扰/姿态变化都会导致累积漂移） */
+    if (!state._relDriftTimer){
+      state._relDriftTimer = setTimeout(function(){
+        state._relDriftTimer = null;
+        if (state.sensorMode === 'relative'){
+          toast('相对模式已运行 60s，建议点击「校准」按钮重新对齐', 3500);
+        }
+      }, 60000);
+    }
+  }
+}
+function initSensor(){
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'){
+    /* P2-2 + 用户反馈修复：iOS 不自动弹权限——等用户首次触摸 compassCanvas 后再弹，避免页面加载即打断；
+       但 3 秒兜底自动弹，避免用户没意识到罗盘盘面可点击而永远用不上指南针 */
+    $('sensorText').textContent = '首次使用请触摸罗盘以授权方向传感器';
+    $('compassCanvas').classList.add('need-perm');
+    return;
+  }
+  window.addEventListener('deviceorientationabsolute', onSensorEvent, true);
+  window.addEventListener('deviceorientation', onSensorEvent, true);
+  setTimeout(function(){
+    if (!state.hasHeading){
+      setSensorStatus('none');
+      $('manualBox').classList.add('show');
+    }
+  }, 1800);
+}
+/* P2-2 + 用户反馈修复：用户首次触摸罗盘 → 弹 iOS 权限请求；
+   同时 3 秒兜底自动弹，避免用户因"罗盘盘面不可点击"的视觉误解而永远用不上指南针 */
+function bindIosPermOnFirstGesture(){
+  if (typeof DeviceOrientationEvent === 'undefined' ||
+      typeof DeviceOrientationEvent.requestPermission !== 'function') return;
+  var asked = false;
+  function ask(){
+    if (asked) return; asked = true;
+    $('compassCanvas').removeEventListener('pointerdown', ask);
+    $('manualRange').removeEventListener('pointerdown', ask);
+    $('permOverlay').classList.add('show');
+  }
+  $('compassCanvas').addEventListener('pointerdown', ask);
+  $('manualRange').addEventListener('pointerdown', ask);
+  /* 兜底：3 秒后用户仍未触摸，自动弹权限弹窗（不打断加载，给用户明显入口） */
+  setTimeout(function(){
+    if (!asked){ asked = true; $('permOverlay').classList.add('show'); }
+  }, 3000);
+}
+bindIosPermOnFirstGesture();
+$('permBtn').onclick = function(){
+  DeviceOrientationEvent.requestPermission().then(function(res){
+    $('permOverlay').classList.remove('show');
+    if (res === 'granted'){
+      /* 修复：同时注册 deviceorientation + deviceorientationabsolute——某些 Android Chrome 走 absolute 路径，老用户已拒绝授权后再次启用需两个都注册 */
+      window.addEventListener('deviceorientationabsolute', onSensorEvent, true);
+      window.addEventListener('deviceorientation', onSensorEvent, true);
+      $('compassCanvas').classList.remove('need-perm');
+      toast('传感器已开启');
+      setTimeout(function(){ if (!state.hasHeading) $('manualBox').classList.add('show'); }, 1800);
+    } else {
+      setSensorStatus('none'); $('manualBox').classList.add('show');
+      toast('未授权传感器，已切换手动转盘；地图模式不受影响', 3400);
+    }
+  }).catch(function(){
+    $('permOverlay').classList.remove('show');
+    setSensorStatus('none'); $('manualBox').classList.add('show');
+  });
+};
+$('permSkip').onclick = function(){
+  $('permOverlay').classList.remove('show');
+  $('compassCanvas').classList.remove('need-perm');
+  $('manualBox').classList.add('show');
+  switchTab('map');
+};
+$('calibDone').onclick = function(){ $('calibOverlay').classList.remove('show'); };
+$('manualRange').addEventListener('input', function(){
+  state.manualMode = true;
+  state.heading = parseFloat(this.value);
+  state.hasHeading = true;
+  $('manualVal').textContent = state.heading.toFixed(1) + '°';
+});
+
+/* =====================================================================
+ * 地图量测（自实现 Slippy 瓦片地图）
+ * ===================================================================== */
+var mapView = (function(){
+  var TILE = 256, MINZ = 3, MAXZ = 18;
+  var area = $('mapArea'), tilesEl = $('mapTiles'), overlay = $('mapOverlay');
+  var ctx2 = overlay.getContext('2d');
+  var center = { lat: 23.12908, lng: 113.26436 };   /* GCJ-02 广州 */
+  var zoom = 12;
+  var tiles = {};          /* key -> img */
+  var tileFailCount = 0, degraded = false;
+  var sitPt = null, facePt = null;   /* GCJ-02 */
+  var w = 0, hgt = 0;
+
+  function lngToX(lng, z){ return (lng + 180)/360 * TILE * Math.pow(2, z); }
+  function latToY(lat, z){
+    var s = Math.sin(lat*Math.PI/180);
+    return (0.5 - Math.log((1+s)/(1-s))/(4*Math.PI)) * TILE * Math.pow(2, z);
+  }
+  function xToLng(x, z){ return x/(TILE*Math.pow(2,z))*360 - 180; }
+  function yToLat(y, z){
+    var n = Math.PI - 2*Math.PI*y/(TILE*Math.pow(2,z));
+    return 180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n)));
+  }
+  function resize(){
+    w = area.clientWidth; hgt = area.clientHeight;
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    overlay.width = w*d; overlay.height = hgt*d;
+    overlay.style.width = w+'px'; overlay.style.height = hgt+'px';
+    ctx2.setTransform(d, 0, 0, d, 0, 0);
+    renderTiles(); drawOverlay();
+  }
+  function renderTiles(){
+    var z = zoom, n = Math.pow(2, z);
+    var cx = lngToX(center.lng, z), cy = latToY(center.lat, z);
+    var x0 = Math.floor((cx - w/2)/TILE), x1 = Math.floor((cx + w/2)/TILE);
+    var y0 = Math.floor((cy - hgt/2)/TILE), y1 = Math.floor((cy + hgt/2)/TILE);
+    var need = {};
+    for (var tx=x0; tx<=x1; tx++){
+      for (var ty=y0; ty<=y1; ty++){
+        var wrapX = ((tx % n) + n) % n;
+        if (ty < 0 || ty >= n) continue;
+        var key = z + '/' + wrapX + '/' + ty;
+        need[key] = true;
+        if (!tiles[key]){
+          var img = document.createElement('img');
+          img.alt = '';
+          var tY = n - 1 - ty;   /* 腾讯瓦片 y 自南向北 */
+          var sub = wrapX % 4;
+          img.src = 'https://rt' + sub + '.map.gtimg.com/realtimerender?z=' + z +
+                    '&x=' + wrapX + '&y=' + tY + '&style=0';
+          (function(key, im){
+            im.onload = function(){ tileFailCount *= 0.9; positionTile(key); };  /* P2-4：成功→指数衰减，避免单次成功清零掩盖历史失败 */
+            im.onerror = function(){
+              tileFailCount++;
+              if (tileFailCount >= 4 && !degraded){ degraded = true; $('mapDegrade').style.display = 'block'; }
+            };
+          })(key, img);
+          tiles[key] = img;
+          tilesEl.appendChild(img);
+        }
+        positionTile(key);
+      }
+    }
+    for (var k in tiles){
+      if (!need[k]){ tiles[k].parentNode && tilesEl.removeChild(tiles[k]); delete tiles[k]; }
+    }
+    if (degraded) drawGrid();
+  }
+  function positionTile(key){
+    var p = key.split('/');
+    var z = +p[0], tx = +p[1], ty = +p[2];
+    var cx = lngToX(center.lng, z), cy = latToY(center.lat, z);
+    var left = tx*TILE - (cx - w/2), top = ty*TILE - (cy - hgt/2);
+    var im = tiles[key];
+    im.style.left = left + 'px'; im.style.top = top + 'px';
+    im.style.display = (z === zoom) ? 'block' : 'none';
+  }
+  function drawGrid(){
+    /* 降级网格底图 */
+    ctx2.strokeStyle = 'rgba(61,50,41,.15)'; ctx2.lineWidth = 1;
+    var step = 60;
+    for (var gx = 0; gx < w; gx += step){
+      ctx2.beginPath(); ctx2.moveTo(gx, 0); ctx2.lineTo(gx, hgt); ctx2.stroke();
+    }
+    for (var gy = 0; gy < hgt; gy += step){
+      ctx2.beginPath(); ctx2.moveTo(0, gy); ctx2.lineTo(w, gy); ctx2.stroke();
+    }
+  }
+  function latLngToScreen(lat, lng){
+    return [lngToX(lng, zoom) - lngToX(center.lng, zoom) + w/2,
+            latToY(lat, zoom) - latToY(center.lat, zoom) + hgt/2];
+  }
+  function screenToLatLng(sx, sy){
+    return [yToLat(latToY(center.lat, zoom) + sy - hgt/2, zoom),
+            xToLng(lngToX(center.lng, zoom) + sx - w/2, zoom)];
+  }
+  function drawOverlay(){
+    ctx2.clearRect(0, 0, w, hgt);
+    if (degraded) drawGrid();
+    if (!sitPt) return;
+    var sp = latLngToScreen(sitPt.lat, sitPt.lng);
+    var fp = facePt ? latLngToScreen(facePt.lat, facePt.lng) : null;
+    if (fp){
+      ctx2.setLineDash([8, 6]);
+      ctx2.strokeStyle = '#EF7D2D'; ctx2.lineWidth = 3;
+      ctx2.beginPath(); ctx2.moveTo(sp[0], sp[1]); ctx2.lineTo(fp[0], fp[1]); ctx2.stroke();
+      ctx2.setLineDash([]);
+      /* P0-2：方向箭头 ▶ 表明坐→向，避免"我点的是坐还是向"歧义 */
+      var mx, my;
+      var dist2d = Math.hypot(fp[0]-sp[0], fp[1]-sp[1]);
+      if (dist2d < 60){
+        /* P2-7：屏距<60px 时中点与坐点重叠，改为向方外侧 30px 切线 */
+        var ang2 = Math.atan2(fp[1]-sp[1], fp[0]-sp[0]);
+        mx = fp[0] + Math.cos(ang2) * 30;
+        my = fp[1] + Math.sin(ang2) * 30;
+      } else {
+        mx = (sp[0]+fp[0])/2; my = (sp[1]+fp[1])/2;
+      }
+      var ang = Math.atan2(fp[1]-sp[1], fp[0]-sp[0]);
+      var ah = 12, aw = 8;
+      ctx2.save();
+      ctx2.translate(mx, my); ctx2.rotate(ang);
+      ctx2.beginPath();
+      ctx2.moveTo(ah, 0); ctx2.lineTo(-ah/2, -aw); ctx2.lineTo(-ah/2, aw);
+      ctx2.closePath();
+      ctx2.fillStyle = '#EF7D2D'; ctx2.fill();
+      ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 1.5; ctx2.stroke();
+      ctx2.restore();
+      /* 向方手柄 */
+      ctx2.beginPath(); ctx2.arc(fp[0], fp[1], 16, 0, Math.PI*2);
+      ctx2.fillStyle = 'rgba(239,125,45,.25)'; ctx2.fill();
+      ctx2.lineWidth = 3; ctx2.strokeStyle = '#EF7D2D'; ctx2.stroke();
+      ctx2.beginPath(); ctx2.arc(fp[0], fp[1], 5, 0, Math.PI*2);
+      ctx2.fillStyle = '#EF7D2D'; ctx2.fill();
+      ctx2.font = '700 12px sans-serif'; ctx2.fillStyle = '#D96A1F';
+      ctx2.fillText('向', fp[0]+20, fp[1]-14);
+    }
+    /* 坐点 */
+    ctx2.beginPath(); ctx2.arc(sp[0], sp[1], 13, 0, Math.PI*2);
+    ctx2.fillStyle = '#C2402A'; ctx2.fill();
+    ctx2.lineWidth = 3; ctx2.strokeStyle = '#fff'; ctx2.stroke();
+    ctx2.font = '700 12px sans-serif'; ctx2.fillStyle = '#fff';
+    ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+    ctx2.fillText('坐', sp[0], sp[1]+1);
+    ctx2.textAlign = 'left'; ctx2.textBaseline = 'alphabetic';
+    /* P2-3：长按 pointerdown 立即画的半透明反馈环 */
+    if (pendingPress){
+      ctx2.beginPath(); ctx2.arc(pendingPress.sx, pendingPress.sy, 22, 0, Math.PI*2);
+      ctx2.fillStyle = 'rgba(239,125,45,.18)'; ctx2.fill();
+      ctx2.lineWidth = 2; ctx2.strokeStyle = 'rgba(239,125,45,.55)'; ctx2.stroke();
+    }
+  }
+
+  /* ---------- 手势 ---------- */
+  var pointers = {}, pinchDist = 0, pressTimer = null, pressPos = null, moved = false;
+  var dragging = null;   /* 'map' | 'handle' */
+  /* P2-3：长按 pointerdown 立即画半透明反馈环，缩短 350ms 后才设坐点——给用户"已识别手势"的视觉确认 */
+  var pendingPress = null;  /* {sx, sy} 屏内坐标 */
+  area.addEventListener('pointerdown', function(ev){
+    /* P0-1 架构性兜底：data-map-ignore 标记的交互控件不参与地图手势（V1.5.2 起已把工具/输入框移出 mapArea，本守卫作为未来新增交互控件的统一豁免口） */
+    if (ev.target.closest('[data-map-ignore]')) return;
+    pointers[ev.pointerId] = { x:ev.clientX, y:ev.clientY };
+    if (Object.keys(pointers).length === 1){
+      moved = false; pressPos = { x:ev.clientX, y:ev.clientY };
+      dragging = 'map';
+      var faceScr = facePt ? latLngToScreen(facePt.lat, facePt.lng) : null;
+      if (faceScr && Math.hypot(ev.clientX - area.getBoundingClientRect().left - faceScr[0],
+                                ev.clientY - area.getBoundingClientRect().top - faceScr[1]) < 30){
+        dragging = 'handle';
+      }
+      /* P2-3：pointerdown 立即画半透明反馈环（屏内坐标），让用户"已识别手势"无需等 350ms */
+      var _rect = area.getBoundingClientRect();
+      pendingPress = { sx: ev.clientX - _rect.left, sy: ev.clientY - _rect.top };
+      drawOverlay();
+      pressTimer = setTimeout(function(){
+        if (!moved && dragging === 'map'){
+          var rect = area.getBoundingClientRect();
+          var ll = screenToLatLng(ev.clientX - rect.left, ev.clientY - rect.top);
+          setSit(ll[0], ll[1]);
+          toast('已设定坐山点，拖动手柄确定向方');
+        }
+      }, 350);  /* P2-3：500ms → 350ms（老人/儿童也能稳定触发）；pointerdown 已在下方立即画半透明反馈环 */
+    } else {
+      clearTimeout(pressTimer);
+      var ids = Object.keys(pointers);
+      if (ids.length === 2){
+        var a = pointers[ids[0]], b = pointers[ids[1]];
+        pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+      }
+    }
+    /* P1-4：setPointerCapture 让指针持续被 area 捕获，避免手指滑出 area 边界提前 endPointer */
+    try { area.setPointerCapture(ev.pointerId); } catch(e){}
+    ev.preventDefault();
+  });
+  area.addEventListener('pointermove', function(ev){
+    if (!pointers[ev.pointerId]) return;
+    if (ev.target.closest('[data-map-ignore]')) return;
+    var prev = pointers[ev.pointerId];
+    var dx = ev.clientX - prev.x, dy = ev.clientY - prev.y;
+    pointers[ev.pointerId] = { x:ev.clientX, y:ev.clientY };
+    if (pressPos && Math.hypot(ev.clientX - pressPos.x, ev.clientY - pressPos.y) > 8){
+      moved = true; clearTimeout(pressTimer);
+      /* P2-3：手指偏离 8px 后清除反馈环 */
+      if (pendingPress){ pendingPress = null; drawOverlay(); }
+    }
+    var ids = Object.keys(pointers);
+    if (ids.length === 2){
+      var a = pointers[ids[0]], b = pointers[ids[1]];
+      var d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinchDist > 0){
+        if (d/pinchDist > 1.25){ setZoom(zoom+1, (a.x+b.x)/2, (a.y+b.y)/2); pinchDist = d; }
+        else if (d/pinchDist < 0.8){ setZoom(zoom-1, (a.x+b.x)/2, (a.y+b.y)/2); pinchDist = d; }
+      }
+      return;
+    }
+    if (dragging === 'handle' && facePt){
+      var rect = area.getBoundingClientRect();
+      var ll = screenToLatLng(ev.clientX - rect.left, ev.clientY - rect.top);
+      facePt = { lat:ll[0], lng:ll[1] };
+      onLineChange();
+      renderTiles(); drawOverlay();
+    } else if (dragging === 'map'){
+      var z = zoom;
+      center = { lat: yToLat(latToY(center.lat, z) - dy, z),
+                 lng: xToLng(lngToX(center.lng, z) - dx, z) };
+      /* P1-3：拖动中只画 overlay，松手/缩放才 renderTiles（瓦片 50+ 张重排卡顿） */
+      drawOverlay();
+      scheduleTileRerender();
+    }
+    ev.preventDefault();
+  });
+  function endPointer(ev){
+    delete pointers[ev.pointerId];
+    clearTimeout(pressTimer);
+    if (Object.keys(pointers).length < 2) pinchDist = 0;
+    if (Object.keys(pointers).length === 0){ dragging = null; pendingPress = null; }
+    /* P1-3：拖动结束才真正 renderTiles（拖动过程中只画 overlay，松手时统一刷新） */
+    if (tileRerenderTimer){ clearTimeout(tileRerenderTimer); tileRerenderTimer = null; }
+    renderTiles(); drawOverlay();
+  }
+  /* P1-3：拖动过程中的瓦片重排用 rAF 合并到下一帧（避免每帧 50+ tile 改 style/DOM） */
+  var tileRerenderTimer = null;
+  function scheduleTileRerender(){
+    if (tileRerenderTimer) return;
+    tileRerenderTimer = requestAnimationFrame(function(){
+      tileRerenderTimer = null;
+      if (dragging === 'map') renderTiles();
+    });
+  }
+  area.addEventListener('pointerup', endPointer);
+  area.addEventListener('pointercancel', endPointer);
+  /* P1-4：已删除原 pointerleave 监听——手指滑出 area 提前 endPointer 会中断平移；
+     改用上面 pointerdown 内的 setPointerCapture 持续捕获指针直到 pointerup */
+
+  function setZoom(z, anchorSx, anchorSy){
+    z = Math.max(MINZ, Math.min(MAXZ, z));
+    if (z === zoom) return;
+    var rect = area.getBoundingClientRect();
+    var ax = anchorSx - rect.left, ay = anchorSy - rect.top;
+    var anchorLL = screenToLatLng(ax, ay);
+    zoom = z;
+    center = { lat: anchorLL[0], lng: anchorLL[1] };
+    /* 保持锚点位置：将锚点置于原屏幕位置 */
+    var shift = screenToLatLng(w/2 + (w/2 - ax), hgt/2 + (hgt/2 - ay));
+    center = { lat: 2*anchorLL[0] - shift[0], lng: 2*anchorLL[1] - shift[1] };
+    renderTiles(); drawOverlay();
+  }
+  function setSit(lat, lng){
+    sitPt = { lat:lat, lng:lng };
+    if (!facePt){
+      /* P2-7：低 zoom 时 dy 过大（zoom=3 → 4.096°，~450km）。改为 max(0.01, ...) — 最少 1.1km，正常 zoom 保持原值 */
+      var dy = Math.max(0.01, 0.008 * Math.pow(2, 12 - zoom));
+      facePt = { lat: Math.min(85, lat + dy), lng: lng };
+    }
+    onLineChange();
+    renderTiles(); drawOverlay();
+    /* P2-11：低 zoom 远程判读警告（zoom<10 时坐向距离过大，不可靠） */
+    if (zoom < 10){ toast('当前缩放级别 ' + zoom + ' 较低，请放大到 ≥10 级以提高判读精度'); }
+  }
+  function flyTo(lat, lng){
+    center = { lat:lat, lng:lng };
+    renderTiles(); drawOverlay();
+  }
+  function getSit(){ return sitPt; }
+  function getFace(){ return facePt; }
+  window.addEventListener('resize', resize);
+
+  function zoomBy(dz){
+    var rect = area.getBoundingClientRect();
+    setZoom(zoom + dz, rect.left + w/2, rect.top + hgt/2);
+  }
+
+  return { resize:resize, flyTo:flyTo, setSit:setSit, getSit:getSit, getFace:getFace,
+           renderTiles:renderTiles, drawOverlay:drawOverlay, zoomBy:zoomBy };
+})();
+
+/* ---------- 地图判读卡 ---------- */
+function onLineChange(){
+  var sit = mapView.getSit(), face = mapView.getFace();
+  if (!sit || !face){ return; }
+  /* 拾取点为 GCJ-02；磁偏角计算转 WGS-84 */
+  var wgsS = E.GEO.gcj02ToWgs84(sit.lat, sit.lng);
+  var wgsF = E.GEO.gcj02ToWgs84(face.lat, face.lng);
+  var T = E.GEO.bearing(wgsS[0], wgsS[1], wgsF[0], wgsF[1]);   /* 向方真北方位角 */
+  var mid = E.GEO.midpoint(wgsS[0], wgsS[1], wgsF[0], wgsF[1]);
+  computeDecl(mid[0], mid[1]);
+  var D = state.declKnown ? state.decl : 0;
+  var M = E.norm(T - D);                                        /* 向方磁北方位角 */
+  var dist = E.GEO.distance(wgsS[0], wgsS[1], wgsF[0], wgsF[1]);
+  var analyzeDeg = state.settings.trueNorthMode ? T : M;        /* 坐方度数 = 向方+180 */
+  var r = E.analyze(E.norm(analyzeDeg + 180), state.settings);
+
+  var tagCls = r.kongwang ? 'severe' : (r.usable ? 'ok' : 'bad');
+  var tagTxt = r.kongwang ? '⚠ 空亡 · ' + r.kongwang.type : (r.usable ? '吉 · ' + r.fenjin.attr : '凶 · ' + r.fenjin.attr);
+  var html = '';
+  html += '<div class="conc">坐' + r.sittingMountain.name + '山' + r.facingMountain.name + '向 · ' +
+          r.jian.label + '<span class="tag ' + tagCls + '">' + tagTxt + '</span></div>';
+  html += '<div class="chips">';
+  html += '<span class="hl">分金 ' + r.fenjin.ganZhi + '（' + r.fenjin.attr + '）</span>';
+  html += '<span>真北 ' + T.toFixed(1) + '°</span>';
+  html += '<span>磁北 ' + M.toFixed(1) + '°</span>';
+  if (state.declKnown) html += '<span>磁偏角 ' + (D >= 0 ? '+' : '') + D.toFixed(1) + '°</span>';
+  html += '<span>线长 ' + (dist >= 1000 ? (dist/1000).toFixed(2) + ' km' : dist.toFixed(0) + ' m') + '</span>';
+  if (r.kongwang) html += '<span class="hl" style="background:#FBE7E2;color:#C2402A">' + r.kongwang.label + '</span>';
+  if (r.suggestion.length) html += '<span>建议：' + r.suggestion.join(' / ') + '</span>';
+  html += '</div>';
+  html += '<details class="params" open><summary>量测详情</summary><div class="kv">';
+  html += '<b>坐点坐标</b><span>' + fmtCoord(sit.lat, sit.lng) + '（GCJ-02）</span>';
+  html += '<b>向点坐标</b><span>' + fmtCoord(face.lat, face.lng) + '（GCJ-02）</span>';
+  html += '<b>向方真北</b><span>' + T.toFixed(2) + '°</span>';
+  html += '<b>向方磁北</b><span>' + M.toFixed(2) + '° = 真北 − 磁偏角</span>';
+  html += '<b>坐方度数</b><span>' + r.sittingDeg.toFixed(2) + '°</span>';
+  html += '<b>偏出中线</b><span>' + r.offset.toFixed(2) + '°</span>';
+  html += '<b>分金格</b><span>' + r.fenjin.ganZhi + ' · ' + r.fenjin.start.toFixed(1) + '°–' +
+          r.fenjin.end.toFixed(1) + '° · ' + (state.settings.fenjinMode === '240' ? '1.5°格' : '3°格') + '</span>';
+  if (state.settings.showLong72){
+    var d72 = E.long72At(r.sittingDeg);
+    html += '<b>穿山龙</b><span>' + (d72.empty ? '正空亡（不可用）' :
+            d72.ganZhi + ' · ' + d72.nayin + '（' + d72.element + '）· ' + d72.fortune) + '</span>';
+  }
+  if (state.settings.showLong60){
+    var d60 = E.long60At(r.sittingDeg);
+    html += '<b>透地龙</b><span>' + (d60.empty ? '戊己空亡（不可用）' :
+            d60.ganZhi + ' · ' + d60.nayin + '（' + d60.element + '）· ' + d60.fortune) + '</span>';
+  }
+  html += '<b>判读结论</b><span>' + r.conclusion + '</span>';
+  html += '</div></details>';
+  /* P2-13：actions 按钮已移出 html 字符串为 part1.html 固定节点 */
+  $('mapCard').innerHTML = html;
+  /* P2-13：mapCardActions 在有坐点时显示，让保存按钮始终可见 */
+  if ($('mapCardActions')) $('mapCardActions').style.display = 'flex';
+}
+$('mapZoomIn').addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+$('mapZoomOut').addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+$('mapZoomIn').onclick = function(){ mapView.zoomBy(1); };
+$('mapZoomOut').onclick = function(){ mapView.zoomBy(-1); };
+$('mapLocate').addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+$('mapLocate').onclick = function(){ locate(); };
+/* 修复：经纬度输入框/跳转按钮 加 stopPropagation，防止 #mapArea 的 pointerdown.preventDefault 阻止 input focus/键盘弹起 */
+['inpLat','inpLng','btnGoCoord'].forEach(function(id){
+  var n = $(id);
+  if (n){
+    n.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+    n.addEventListener('touchstart',   function(ev){ ev.stopPropagation(); }, { passive: true });
+  }
+});
+$('btnGoCoord').onclick = function(){
+  var la = parseFloat($('inpLat').value), lg = parseFloat($('inpLng').value);
+  if (isNaN(la) || isNaN(lg) || la < -85 || la > 85 || lg < -180 || lg > 180){
+    toast('坐标格式不正确'); return;
+  }
+  mapView.flyTo(la, lg);
+  toast('已跳转（若为 GPS 经纬度请自行换算 GCJ-02）');
+};
+
+/* =====================================================================
+ * 记录 / 设置 / Tab
+ * ===================================================================== */
+function saveRecord(mode, r, extra){
+  var rec = {
+    id: Date.now(), ts: new Date().toLocaleString('zh-CN'),
+    mode: mode, conclusion: r.conclusion,
+    sit: r.sittingMountain.name, face: r.facingMountain.name,
+    fenjin: r.fenjin.ganZhi, attr: r.fenjin.attr,
+    sittingDeg: +r.sittingDeg.toFixed(2),
+    decl: state.declKnown ? +state.decl.toFixed(2) : null,
+    extra: extra || null
+  };
+  var list = E.STORE.pushRecord(
+    E.STORE.safeParse(localStorage.getItem('lp_records'), []), rec, 50);
+  if (state._noStorage){ toast('存储不可用，记录未保存（刷新即丢失）'); return; }
+  try { localStorage.setItem('lp_records', JSON.stringify(list)); }
+  catch(e){ state._noStorage = true; toast('保存失败：存储已满，请清理记录'); return; }
+  toast('已保存到记录');
+}
+function renderRecords(){
+  /* P0-3：V1.4 起旧 pan 模式记录已无对应功能，自动归类到「地图量测」并回写 */
+  var list = E.STORE.safeParse(localStorage.getItem('lp_records'), []);
+  var migrated = false;
+  for (var j=0; j<list.length; j++){ if (list[j].mode === 'pan'){ list[j].mode = 'map'; migrated = true; } }
+  if (migrated && !state._noStorage){
+    try { localStorage.setItem('lp_records', JSON.stringify(list)); } catch(e){}
+  }
+  var el = $('recList');
+  if (!list.length){ el.innerHTML = '<div class="empty">暂无测量记录</div>'; return; }
+  var html = '';
+  if (migrated){
+    html += '<div class="empty" style="padding:8px 12px;font-size:11.5px;background:var(--primary-soft);color:var(--primary-deep);border-radius:8px;margin-bottom:10px">V1.4 起「手工排盘」已合并到「地图量测」，旧记录已自动归类</div>';
+  }
+  for (var i=list.length-1; i>=0; i--){
+    var it = list[i];
+    html += '<div class="rec-item">' +
+      '<div class="rt"><span>' + it.ts + '</span><span>' +
+      ({ live:'实地罗盘', map:'地图量测' })[it.mode || 'map'] + '</span></div>' +
+      '<div class="rc">' + it.conclusion + '</div>' +
+      '<div class="rm">坐方 ' + it.sittingDeg + '°' +
+      (it.decl != null ? ' · 磁偏角 ' + (it.decl >= 0 ? '+' : '') + it.decl + '°' : '') + '</div>' +
+      '<button class="del" data-id="' + it.id + '">删除</button></div>';
+  }
+  el.innerHTML = html;
+  var btns = el.querySelectorAll('.del');
+  for (var j=0;j<btns.length;j++){
+    btns[j].onclick = function(){
+      var id = +this.getAttribute('data-id');
+      var l = E.STORE.safeParse(localStorage.getItem('lp_records'), [])
+        .filter(function(x){ return x.id !== id; });
+      if (!state._noStorage){
+        try { localStorage.setItem('lp_records', JSON.stringify(l)); } catch(e){}
+      }
+      renderRecords();
+    };
+  }
+}
+$('btnRecords').onclick = function(){ renderRecords(); $('pageRecords').classList.add('show'); };
+$('recBack').onclick = function(){ $('pageRecords').classList.remove('show'); };
+
+function renderSettings(){
+  var s = state.settings;
+  function seg(opts, cur, cb){
+    var h = '<div class="seg">';
+    for (var i=0;i<opts.length;i++){
+      h += '<button data-v="' + opts[i].v + '" class="' + (String(opts[i].v) === String(cur) ? 'on' : '') +
+           '">' + opts[i].t + '</button>';
+    }
+    return h + '</div>';
+  }
+  var html = '';
+  /* P0-3：V1.4 合并说明常驻（不依赖打开记录页） */
+  html += '<div class="set-group"><div class="set-row" style="background:var(--primary-soft);border-radius:8px;padding:10px 14px;margin:6px 0;display:block"><div class="lab" style="font-size:12.5px;color:var(--primary-deep);line-height:1.6">V1.4 起 <b>「手工排盘」</b> 已合并到 <b>「地图量测」</b><br><span style="font-size:11px;color:var(--muted)">如记录页有旧版手工排盘条目，已自动归类到地图量测</span></div></div></div>';
+  html += '<div class="set-group"><div class="set-row"><div class="lab">分金体系<small>120 分金（三合主流）/ 240 分金</small></div>' +
+    seg([{v:'120',t:'120分金'},{v:'240',t:'240分金'}], s.fenjinMode, 'fenjinMode') + '</div>';
+  html += '<div class="set-row"><div class="lab">空亡判定宽度<small>坐线距山界多少度内告警</small></div>' +
+    seg([{v:0.5,t:'±0.5°'},{v:1,t:'±1°'},{v:1.5,t:'±1.5°'}], s.kongwangWidth, 'kongwangWidth') + '</div>';
+  html += '<div class="set-row"><div class="lab">坐标格式</div>' +
+    seg([{v:'deg',t:'度'},{v:'dms',t:'度分秒'}], s.coordFormat, 'coordFormat') + '</div>';
+  html += '<div class="set-row"><div class="lab">盘面风格</div>' +
+    seg([{v:'modern',t:'现代'},{v:'classic',t:'仿古'}], s.dialStyle, 'dialStyle') + '</div></div>';
+  html += '<div class="set-group"><div class="set-row"><div class="lab">真北修正<small>开启后以真北体系判读（默认磁北，与实体罗盘一致）</small></div>' +
+    '<button class="switch ' + (s.trueNorthMode ? 'on' : '') + '" id="swTrueNorth"></button></div></div>';
+  html += '<div class="set-group">' +
+    '<div class="set-row"><div class="lab">穿山七十二龙<small>格龙层 · 48 实龙 + 24 正空亡 · 甲子起壬山</small></div>' +
+    '<button class="switch ' + (s.showLong72 ? 'on' : '') + '" id="swLong72"></button></div>' +
+    '<div class="set-row"><div class="lab">透地六十龙<small>透地层 · 六十甲子 · 戊己 12 龙空亡</small></div>' +
+    '<button class="switch ' + (s.showLong60 ? 'on' : '') + '" id="swLong60"></button></div></div>';
+  html += '<div class="set-group"><div class="set-row"><div class="lab" style="font-size:12px;color:var(--muted)">' +
+    '罗盘体系：地盘正针 · 三合盘 · 一百二十分金<br>磁偏角模型：' + E.GEOMAG.model + '（' + E.GEOMAG.epoch + ' 纪元）<br>' +
+    '孤虚旺相：丙庚旺 · 丁辛相 · 甲壬孤 · 乙癸虚 · 戊己空亡</div></div></div>';
+  $('setBody').innerHTML = html;
+
+  $('setBody').querySelectorAll('.seg').forEach(function(el, idx){
+    var keys = ['fenjinMode','kongwangWidth','coordFormat','dialStyle'];
+    el.querySelectorAll('button').forEach(function(btn){
+      btn.onclick = function(){
+        var v = btn.getAttribute('data-v'), k = keys[idx];
+        if (k === 'kongwangWidth') v = parseFloat(v);
+        state.settings[k] = v;
+        saveSettings(); applySettings(); renderSettings(); updateChips();
+      };
+    });
+  });
+  $('swTrueNorth').onclick = function(){
+    state.settings.trueNorthMode = !state.settings.trueNorthMode;
+    saveSettings(); applySettings(); renderSettings();
+  };
+  $('swLong72').onclick = function(){
+    state.settings.showLong72 = !state.settings.showLong72;
+    saveSettings(); applySettings(); renderSettings();
+  };
+  $('swLong60').onclick = function(){
+    state.settings.showLong60 = !state.settings.showLong60;
+    saveSettings(); applySettings(); renderSettings();
+  };
+}
+function applySettings(){
+  buildDial();
+  state.lastCardDeg = null;
+  /* P2-10：合帧 buildDial → renderLiveCard → onLineChange 到同一 rAF，避免真北/分金开关切换产生 3 次连续 layout/paint */
+  requestAnimationFrame(function(){
+    if (typeof effFacing === 'function' && state.hasHeading) renderLiveCard(effFacing());
+    if (mapView && mapView.getSit && mapView.getSit()) onLineChange();
+  });
+}
+$('btnSettings').onclick = function(){ renderSettings(); $('pageSettings').classList.add('show'); };
+$('setBack').onclick = function(){ $('pageSettings').classList.remove('show'); };
+
+/* ---------- Tab 切换 ---------- */
+var activeTab = 'live';
+function switchTab(tab){
+  activeTab = tab;
+  var btns = document.querySelectorAll('nav.tabs button');
+  for (var i=0;i<btns.length;i++) btns[i].classList.toggle('active', btns[i].getAttribute('data-tab') === tab);
+  $('view-live').classList.toggle('active', tab === 'live');
+  $('view-map').classList.toggle('active', tab === 'map');
+  if (tab === 'map'){ setTimeout(function(){ mapView.resize(); }, 60); }
+  else { resizeCanvas(); }
+}
+document.querySelectorAll('nav.tabs button').forEach(function(btn){
+  btn.onclick = function(){ switchTab(btn.getAttribute('data-tab')); };
+});
+
+/* ---------- 初始化 ---------- */
+cv = $('compassCanvas'); ctx = cv.getContext('2d');
+resizeCanvas();
+buildDial();
+updateChips();
+setSensorStatus('none');
+initSensor();
+renderLiveCard(0);
+animLoop();
+mapView.resize();
+window.addEventListener('resize', function(){ resizeCanvas(); mapView.resize(); });
+
+/* P0-2：Safari 隐私模式首屏提示（迟于 toast/dom 初始化即可执行） */
+if (state._noStorage){ setTimeout(function(){ toast('隐私模式：本次配置不保存', 4000); }, 300); }
+
+/* P1-6：App 唤醒时重置 heading 与相对偏移——传感器在后台可能漂移到极端值，唤醒瞬间 alpha 可能跨 0/360° 跳变 */
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState !== 'visible') return;
+  /* 重置相对模式偏移——绝对/ iOS 模式无需偏移，relative 必须重置否则首次 alpha 会错误叠加 */
+  state.relOffsetAlpha = null;
+  state.headingSm = 0;  /* 平滑系数也清零，避免后台累积的低通值带入新周期 */
+  state.lastCardDeg = null;  /* 让 maybeUpdateLiveCard 强制重渲染 */
+  /* 不重置 state.decl（磁偏角 24h 内有效，无需重新计算） */
+  /* 若用户在前台依赖 GPS 定位，长时间后台可能位置已变——触发一次轻量级 decl 复算（如果有坐点） */
+  if (mapView && mapView.getSit && mapView.getSit()){
+    var sit = mapView.getSit();
+    /* P0-7：getSit() 返回 {lat,lng} 对象，原 sit[0]/sit[1] 恒为 undefined，
+       导致 computeDecl(undefined, undefined) 静默失败（declination 得 NaN 被 isFinite 拦掉），
+       唤醒后磁偏角永远不刷新。改用对象属性访问。 */
+    if (sit) computeDecl(sit.lat, sit.lng);
+  }
+});
+
+/* P1-2：静默白屏兜底——任意脚本异常都降级提示，避免完全白屏 */
+window.addEventListener('error', function(ev){
+  if (ev && ev.error){
+    console.error('[LP error]', ev.error);
+    var body = document.body;
+    if (body && !body.querySelector('.lp-fatal')){
+      var div = document.createElement('div');
+      div.className = 'lp-fatal';
+      div.style.cssText = 'position:fixed;left:0;right:0;bottom:0;background:rgba(194,64,42,.95);color:#fff;text-align:center;padding:10px;font-size:13px;z-index:9999';
+      div.textContent = '页面发生错误，请刷新重试';
+      body.appendChild(div);
+    }
+  }
+});
+
+/* P2-13：btnCalib/btnSaveLive/btnSaveMap 统一注册（移出 renderLiveCard / renderMapCard 后由此次注册，避免每次传感器触发重建监听） */
+(function bindPersistentActions(){
+  var bC = $('btnCalib'); if (bC) bC.onclick = function(){ $('calibOverlay').classList.add('show'); };
+  var bSL = $('btnSaveLive'); if (bSL) bSL.onclick = function(){
+    if (!state.hasHeading){ toast('尚未获取方向传感器数据，无法保存'); return; }
+    var sitDeg = E.norm(state.heading + 180);
+    var r = E.analyze(sitDeg, state.settings);
+    saveRecord('live', r);
+  };
+  var bSM = $('btnSaveMap'); if (bSM) bSM.onclick = function(){
+    /* 重新从 mapView 拿 sit/face，闭包不能持有陈旧值 */
+    var sit = mapView.getSit(), face = mapView.getFace();
+    if (!sit || !face){ toast('请先在地图上选点和定向'); return; }
+    /* P0-6：原实现三重错误叠加导致本按钮 100% 抛异常，修复如下——
+       ① E.GEO.gcjToWgs 不存在（引擎导出名为 gcj02ToWgs84）→ TypeError
+       ② getSit()/getFace() 返回 {lat,lng} 对象而非数组，sit[0] 恒为 undefined
+       ③ bearing() 是引擎内部函数，UI 作用域不可见 → ReferenceError
+       现在统一走 E.GEO.* 并用对象属性访问。 */
+    var wgsS = E.GEO.gcj02ToWgs84(sit.lat, sit.lng);
+    var wgsF = E.GEO.gcj02ToWgs84(face.lat, face.lng);
+    var mid = E.GEO.midpoint(wgsS[0], wgsS[1], wgsF[0], wgsF[1]);
+    computeDecl(mid[0], mid[1]);
+    var D = state.declKnown ? state.decl : 0;
+    var T = E.GEO.bearing(wgsS[0], wgsS[1], wgsF[0], wgsF[1]);   /* 向方真北 */
+    var M = E.norm(T - D);                                        /* 向方磁北 */
+    var dist = E.GEO.distance(wgsS[0], wgsS[1], wgsF[0], wgsF[1]);
+    var r = E.analyze(E.norm((state.settings.trueNorthMode ? T : M) + 180), state.settings);
+    saveRecord('map', r, {
+      sit:[+sit.lat.toFixed(6), +sit.lng.toFixed(6)],
+      face:[+face.lat.toFixed(6), +face.lng.toFixed(6)],
+      T:+T.toFixed(2), M:+M.toFixed(2), D:D, dist:Math.round(dist)
+    });
+  };
+})();
+})();
+
+</script>
+
+</body>
+</html>

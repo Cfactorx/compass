@@ -1,0 +1,92 @@
+<!-- 地图量测页：原生 map 组件 + 十字准星取点 + 点击(或按钮)定向
+
+     原生组件覆盖注意（踩坑点）：
+     ① cover-view 必须是 <map> 的子节点才能覆盖在地图之上，写成兄弟节点无效；
+     ② cover-view 会吞掉其矩形范围内的触摸，因此十字准星拆成 3 个「细条」而非
+        一整块 32×32px 的容器，避免地图中心区域无法拖动；
+     ③ 为防个别机型上地图 bindtap 被原生层吞掉，另提供「对准准星设为向方点」按钮兜底。 -->
+<view class="map-page">
+
+  <view class="map-area">
+    <map
+      id="lpMap"
+      class="map"
+      latitude="{{center.lat}}"
+      longitude="{{center.lng}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      polyline="{{polyline}}"
+      enable-rotate="{{false}}"
+      enable-overlooking="{{false}}"
+      enable-satellite="{{false}}"
+      bindregionchange="onRegionChange"
+      bindtap="onMapTap"
+    >
+      <!-- 十字准星：拆成横条 / 竖条 / 中心点，尽量少挡手势 -->
+      <cover-view class="ch-h"></cover-view>
+      <cover-view class="ch-v"></cover-view>
+      <cover-view class="ch-dot"></cover-view>
+
+      <!-- 顶部提示 + 地图中心坐标 -->
+      <cover-view class="map-hint">{{hint}}</cover-view>
+      <cover-view class="map-center">{{centerText}}</cover-view>
+
+      <!-- 右侧工具列：不用 flex（cover-view 对 flex 支持不完整），逐项绝对定位 -->
+      <cover-view class="tool t1" bindtap="onSetMeasurePos">◎</cover-view>
+      <cover-view class="tool t2" bindtap="onZoomIn">＋</cover-view>
+      <cover-view class="tool t3" bindtap="onZoomOut">－</cover-view>
+      <cover-view class="tool t4" bindtap="onClear">✕</cover-view>
+    </map>
+  </view>
+
+  <scroll-view class="map-bottom" scroll-y>
+    <view class="btn-row">
+      <view class="btn {{sit ? 'ghost' : ''}}" bindtap="onSetSit">
+        {{sit ? '重设坐山点（对准准星）' : '设为坐山点（对准准星）'}}
+      </view>
+    </view>
+    <view class="btn-row" wx:if="{{sit}}">
+      <view class="btn ghost" bindtap="onSetFaceByCrosshair">对准准星设为向方点</view>
+      <view class="btn plain" bindtap="onSwap" wx:if="{{face}}">反转坐向</view>
+    </view>
+    <view class="btn-row" wx:if="{{sit && face}}">
+      <view class="btn" bindtap="onSave">保存记录</view>
+    </view>
+
+    <view class="coord-row">
+      <input class="coord-input" type="digit" placeholder="纬度 如 23.12908"
+             value="{{inpLat}}" bindinput="onInpLat" />
+      <input class="coord-input" type="digit" placeholder="经度 如 113.26436"
+             value="{{inpLng}}" bindinput="onInpLng" />
+      <view class="coord-btn" bindtap="onGoCoord">跳转</view>
+    </view>
+    <view class="tip-row">输入坐标即同时把它设为「测量位置」，磁偏角按该点计算（本工具不使用手机定位）</view>
+
+    <view class="card" wx:if="{{card}}">
+      <view class="conc">
+        {{card.conc}}<text class="tag tag-{{card.tagLevel}}">{{card.tagText}}</text>
+      </view>
+      <view class="chips">
+        <text wx:for="{{card.chips}}" wx:key="index" class="chip {{item.cls}}">{{item.text}}</text>
+      </view>
+      <view class="kv">
+        <view class="row" wx:for="{{card.kv}}" wx:key="index">
+          <text class="k">{{item.k}}</text>
+          <text class="v">{{item.v}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card" wx:else>
+      <view class="empty">尚未选点</view>
+      <view class="steps">
+        <view class="step"><text class="sn">1</text>拖动地图，把十字准星对准目标位置</view>
+        <view class="step"><text class="sn">2</text>点「设为坐山点（对准准星）」</view>
+        <view class="step"><text class="sn">3</text>点击地图上另一处作为「向方点」；或再次拖动地图后点「对准准星设为向方点」</view>
+        <view class="step"><text class="sn">4</text>点右侧 <text class="key">◎</text> 可把准星坐标设为「测量位置」，用于算磁偏角</view>
+      </view>
+    </view>
+
+    <disclaimer variant="short"></disclaimer>
+  </scroll-view>
+</view>

@@ -1,0 +1,153 @@
+/* 地图量测页样式 */
+.map-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #FFF6EE;
+}
+.map-area {
+  position: relative;
+  flex: 1;
+  min-height: 46vh;
+}
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- 十字准星（cover-view，必须为 <map> 子节点才能覆盖原生组件）
+       拆成 3 个细条而非一整块容器：cover-view 会吞掉其矩形内的触摸，
+       整块 64×64rpx 会让地图正中央无法拖动。 ---- */
+.ch-h {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72rpx;
+  height: 3rpx;
+  margin-left: -36rpx;
+  margin-top: -2rpx;
+  background-color: rgba(239, 125, 45, .9);
+}
+.ch-v {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3rpx;
+  height: 72rpx;
+  margin-left: -2rpx;
+  margin-top: -36rpx;
+  background-color: rgba(239, 125, 45, .9);
+}
+.ch-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10rpx;
+  height: 10rpx;
+  margin-left: -5rpx;
+  margin-top: -5rpx;
+  border-radius: 5rpx;
+  background-color: #EF7D2D;
+}
+
+/* ---- 顶部提示 ---- */
+.map-hint {
+  position: absolute;
+  left: 20rpx;
+  top: 20rpx;
+  width: 420rpx;
+  background-color: rgba(255, 255, 255, .94);
+  color: #8A7A6D;
+  border-radius: 16rpx;
+  padding: 10rpx 18rpx;
+  font-size: 21rpx;
+  line-height: 1.55;
+}
+.map-center {
+  position: absolute;
+  left: 20rpx;
+  top: 128rpx;
+  background-color: rgba(61, 50, 41, .8);
+  color: #FFFFFF;
+  border-radius: 14rpx;
+  padding: 8rpx 16rpx;
+  font-size: 20rpx;
+}
+
+/* ---- 右侧工具列（逐项绝对定位，不依赖 flex）---- */
+.tool {
+  position: absolute;
+  right: 20rpx;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 20rpx;
+  background-color: rgba(255, 255, 255, .96);
+  color: #D96A1F;
+  font-size: 34rpx;
+  font-weight: 700;
+  text-align: center;
+  line-height: 76rpx;
+}
+.tool.t1 { bottom: 268rpx; }
+.tool.t2 { bottom: 180rpx; }
+.tool.t3 { bottom: 92rpx; }
+.tool.t4 { bottom: 4rpx; }
+
+/* ---- 底部操作区 ---- */
+.map-bottom {
+  background: #FFF6EE;
+  max-height: 50vh;
+  flex-shrink: 0;
+  padding: 12rpx 24rpx 24rpx;
+  box-sizing: border-box;
+}
+
+/* 底部操作区 */
+.map-bottom {
+  background: #FFF6EE;
+  max-height: 50vh;
+  flex-shrink: 0;
+  padding: 12rpx 24rpx 24rpx;
+  box-sizing: border-box;
+}
+
+/* 坐标输入行 / 提示行样式已提到 app.wxss（与罗盘页共用） */
+
+.steps .key {
+  display: inline-block;
+  min-width: 34rpx;
+  padding: 0 8rpx;
+  background: #FBE9D8;
+  color: #D96A1F;
+  border-radius: 8rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ---- 步骤引导 ---- */
+.steps { padding: 0 8rpx; }
+.steps .step {
+  font-size: 24rpx;
+  color: #8A7A6D;
+  line-height: 1.7;
+  padding: 8rpx 0;
+}
+.steps .sn {
+  display: inline-block;
+  width: 32rpx;
+  height: 32rpx;
+  line-height: 32rpx;
+  text-align: center;
+  border-radius: 16rpx;
+  background: #FBE9D8;
+  color: #D96A1F;
+  font-size: 20rpx;
+  font-weight: 700;
+  margin-right: 12rpx;
+}
+.sub-hint {
+  font-size: 22rpx;
+  color: #B0A494;
+  line-height: 1.7;
+  margin-top: 10rpx;
+}

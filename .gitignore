@@ -1,0 +1,30 @@
+# ===== 平台内部文件（不随项目分发）=====
+.wbapp_*.genie
+.workbuddy/
+
+# ===== 第三方依赖副本 =====
+# 这些是 WMM 系数研究阶段下载的第三方包，体积大、有独立版权，
+# 复现只需 WMM.COF / WMM_2025.COF 与 fix_coeffs.js，无需随仓库分发。
+assets/geomag.tgz
+assets/geomag_src/
+assets/pygeomag.whl
+assets/pygeomag_pkg/
+
+# ===== 研究阶段的无效下载（内容实为 404 提示，无参考价值）=====
+assets/WMM2025COF
+assets/wmm2025_meta.json
+assets/repo_tree.json
+assets/geomag_meta.json
+assets/pygeomag.json
+
+# ===== 系统与编辑器 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+node_modules/
+*.log
+*.tmp
+
+# ===== 本地环境 =====
+.env
+.env.local
